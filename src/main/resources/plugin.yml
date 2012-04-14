@@ -1,0 +1,44 @@
+name: TheCleaner
+main: net.krinsoft.thecleaner.Cleaner
+version: {project.version}
+author: krinsdeath
+
+commands:
+  cleanup:
+    aliases: [clean]
+    description: Clean up the entities in your server's worlds
+    usage: |
+      /<command> --debug        - Toggle debugging
+      /<command> --all          - Clean the entities on all worlds
+      /<command> [world]        - Clean the entities on the specified world
+      /<command> --info         - Get info about the currently loaded worlds
+
+permissions:
+  thecleaner.all:
+    description: Allows the user to clean all the entities from all worlds.
+    default: op
+  thecleaner.force:
+    description: Allows the user to force cleanup of entities which otherwise wouldn't be cleaned.
+    default: op
+  thecleaner.debug:
+    description: Allows the user to toggle debug mode.
+    default: op
+  thecleaner.vehicle:
+    description: Allows the user to specify that ONLY vehicles are cleaned.
+    default: op
+  thecleaner.painting:
+    description: Allows the user to specify that ONLY paintings are cleaned.
+    default: op
+  thecleaner.info:
+    description: Shows the entity count for each world.
+    default: true
+  thecleaner.*:
+    description: Sets all Cleaner nodes to true
+    default: op
+    children:
+      thecleaner.all: true
+      thecleaner.debug: true
+      thecleaner.force: true
+      thecleaner.info: true
+      thecleaner.painting: true
+      thecleaner.vehicle: true
