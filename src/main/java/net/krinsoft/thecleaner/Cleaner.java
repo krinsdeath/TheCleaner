@@ -34,6 +34,7 @@ public class Cleaner extends JavaPlugin {
             boolean vehicle = false;
             boolean info = false;
             boolean painting = false;
+            boolean golem = false;
             for (String arg : args) {
                 if (arg.equals("--force") && check(sender, "force")) {
                     force = true;
@@ -41,11 +42,14 @@ public class Cleaner extends JavaPlugin {
                 if (arg.equals("--vehicle") && check(sender, "vehicle")) {
                     vehicle = true;
                 }
+                if (arg.equals("--painting") && check(sender, "painting")) {
+                    painting = true;
+                }
                 if (arg.equals("--info") && check(sender, "info")) {
                     info = true;
                 }
-                if (arg.equals("--painting") && check(sender, "painting")) {
-                    painting = true;
+                if (arg.equals("--golem") && check(sender, "golem")) {
+                    golem = true;
                 }
             }
             if (args.length == 1 && args[0].equalsIgnoreCase("--debug")) {
@@ -104,31 +108,44 @@ public class Cleaner extends JavaPlugin {
                 while (iter.hasNext()) {
                     Entity e = iter.next();
                     if (e instanceof Painting && !painting) {
+                        // painting wasn't specified, so we're ignoring this entity
                         debug("Encountered a painting: " + ((Painting)e).getArt().toString());
                         continue;
                     }
                     if (!(e instanceof Painting) && painting) {
+                        // this isn't a painting, and painting was specified
                         continue;
                     }
                     if (!(e instanceof Vehicle) && vehicle) {
+                        // this isn't a vehicle, and vehicle was specified
                         continue;
                     }
+                    if (e instanceof Golem) {
+                        if (e instanceof IronGolem && ((IronGolem)e).isPlayerCreated() && !golem) {
+                            if (!force) { continue; }
+                        }
+                    }
                     if (e instanceof Player) {
+                        // ignore players!
                         debug("Encountered player while cleaning... " + ((Player)e).getName());
                         continue;
                     }
                     if (e instanceof Tameable) {
+                        // this is a possible pet.. let's see
                         if (((Tameable)e).isTamed() && !force) {
+                            // it's a pet! let's ignore since we don't have force specified
                             debug("Encountered player pet while cleaning... " + ((Tameable)e).getOwner());
                             continue;
                         }
                     }
                     if (e.getPassenger() != null && e.getPassenger() instanceof Player && !force) {
+                        // this entity has a passenger, and we haven't specified force
                         debug("Encountered vehicle with passenger... " + ((Player)e.getPassenger()).getName());
                         continue;
                     }
+                    // all the checks passed, so we'll remove the entity
                     e.remove();
-                    world.getEntities().remove(e);
+                    iter.remove();
                     cleaned++;
                 }
                 String line = world.getName() + ": " + cleaned + "/" + ents + " entities removed";

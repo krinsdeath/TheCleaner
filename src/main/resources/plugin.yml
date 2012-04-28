@@ -1,6 +1,6 @@
 name: TheCleaner
 main: net.krinsoft.thecleaner.Cleaner
-version: {project.version}
+version: ${project.version}
 author: krinsdeath
 
 commands:
