@@ -6,8 +6,13 @@
 
     <groupId>net.krinsoft</groupId>
     <artifactId>thecleaner</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>TheCleaner</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.number>b8</project.build.number>
+    </properties>
 
     <build>
         <finalName>${project.name}</finalName>

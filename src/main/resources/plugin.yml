@@ -1,7 +1,9 @@
 name: TheCleaner
 main: net.krinsoft.thecleaner.Cleaner
-version: ${project.version}
+version: ${project.version}-${project.build.number}
 author: krinsdeath
+
+load: startup
 
 commands:
   cleanup:
@@ -29,9 +31,21 @@ permissions:
   thecleaner.painting:
     description: Allows the user to specify that ONLY paintings are cleaned.
     default: op
+  thecleaner.golem:
+    description: Allows the user to specify that golems should be cleaned.
+    default: op
+  thecleaner.pet:
+    description: Allows the user to specify that pets should be cleaned.
+    default: op
+  thecleaner.villager:
+    description: Allows the user to specify that villagers should be cleaned.
+    default: op
   thecleaner.info:
     description: Shows the entity count for each world.
     default: true
+  thecleaner.world.*:
+    description: Allows the user to clean entities on all loaded worlds.
+    default: op
   thecleaner.*:
     description: Sets all Cleaner nodes to true
     default: op
@@ -42,3 +56,4 @@ permissions:
       thecleaner.info: true
       thecleaner.painting: true
       thecleaner.vehicle: true
+      thecleaner.golem: true
