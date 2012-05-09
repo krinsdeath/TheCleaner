@@ -1,6 +1,6 @@
 name: TheCleaner
 main: net.krinsoft.thecleaner.Cleaner
-version: ${project.version}-${project.build.number}
+version: maven-version-number
 author: krinsdeath
 
 load: startup
