@@ -6,13 +6,20 @@
 
     <groupId>net.krinsoft</groupId>
     <artifactId>thecleaner</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <name>TheCleaner</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.number>b8</project.build.number>
+        <project.build.number>DEV</project.build.number>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>bukkit-repo</id>
+            <url>http://repo.bukkit.org/content/groups/public</url>
+        </repository>
+    </repositories>
 
     <build>
         <finalName>${project.name}</finalName>
@@ -32,7 +39,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.2.4-R1.0-SNAPSHOT</version>
+            <version>1.2.5-R1.0</version>
             <type>jar</type>
         </dependency>
     </dependencies>

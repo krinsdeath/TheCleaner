@@ -5,6 +5,7 @@ package net.krinsoft.thecleaner;
  */
 public enum Flag {
     INFO,
+    VERBOSE,
     FORCE,
     ALL,
     VEHICLE,

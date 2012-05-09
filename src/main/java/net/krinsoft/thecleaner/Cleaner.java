@@ -17,13 +17,47 @@ import java.util.Set;
  * @author krinsdeath
  */
 public class Cleaner extends JavaPlugin {
+    private class Clock implements Runnable {
+        private int ticks = 0;
+        private long started;
+        private CommandSender runner;
+
+        public Clock(CommandSender sender) {
+            runner = sender;
+            started = System.currentTimeMillis();
+        }
+
+        @Override
+        public void run() {
+            ticks++;
+            long runtime = System.currentTimeMillis() - started;
+            if (runtime >= 1000 || ticks == 20) {
+                if (ticks < 15) {
+                    runner.sendMessage("Server clock is running slow. Consider removing some plugins.");
+                }
+                if (runtime < 1000) {
+                    runner.sendMessage("Server is performing excellently. 20 ticks took <1000ms to complete.");
+                }
+                runner.sendMessage("Expected 20 ticks, got " + ticks + ".");
+                getServer().getScheduler().cancelTask(timerID);
+                throw new RuntimeException("Clock time exceeded.");
+            }
+        }
+    }
+
     private boolean debug = false;
-    public boolean clean_on_load = false;
+    public boolean clean_on_overload = true;
+    public int clean_on_overload_total = 5000;
+    public boolean clean_on_load = true;
     public String clean_on_load_flags = "";
+
+    private int timerID;
 
     public void onEnable() {
         debug = getConfig().getBoolean("debug", false);
-        clean_on_load = getConfig().getBoolean("startup.clean", false);
+        clean_on_overload = getConfig().getBoolean("overload.clean", true);
+        clean_on_overload_total = getConfig().getInt("overload.total", 5000);
+        clean_on_load = getConfig().getBoolean("startup.clean", true);
         clean_on_load_flags = getConfig().getString("startup.flags", "");
         dumpConfig();
         saveConfig();
@@ -38,17 +72,33 @@ public class Cleaner extends JavaPlugin {
 
     private void dumpConfig() {
         getConfig().set("debug", debug);
+        getConfig().set("overload.clean", clean_on_overload);
+        getConfig().set("overload.total", clean_on_overload_total);
         getConfig().set("startup.clean", clean_on_load);
         getConfig().set("startup.flags", clean_on_load_flags);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equals("sysstat")) {
+            Runtime runtime = Runtime.getRuntime();
+            long maxMemory  = runtime.maxMemory();
+            long allocated  = runtime.totalMemory();
+            long free       = runtime.freeMemory();
+            Clock clock = new Clock(sender);
+            sender.sendMessage("Maximum memory: " + (maxMemory / 1024L / 1024L) + "MB");
+            sender.sendMessage("Allocated: " + (allocated / 1024L / 1024L) + "MB");
+            sender.sendMessage("Free: " + (free / 1024L / 1024L) + "MB");
+            timerID = getServer().getScheduler().scheduleSyncRepeatingTask(this, clock, 0L, 1L);
+        }
         if (cmd.getName().equals("cleanup")) {
             Set<Flag> flags = EnumSet.noneOf(Flag.class);
             for (String arg : args) {
                 if (arg.equals("--info") && check(sender, "info")) {
                     flags.clear();
                     flags.add(Flag.INFO); break;
+                }
+                if (arg.equals("--verbose") && check(sender, "verbose")) {
+                    flags.add(Flag.VERBOSE); continue;
                 }
                 if (arg.equals("--force") && check(sender, "force")) {
                     flags.clear();
@@ -117,9 +167,10 @@ public class Cleaner extends JavaPlugin {
             }
             if (flags.contains(Flag.FORCE)) {
                 sender.sendMessage(ChatColor.RED + "Warning! All entities other than players are being cleaned!");
-            }
-            if (flags.contains(Flag.INFO)) {
+            } else if (flags.contains(Flag.INFO)) {
                 sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "World information" + ChatColor.GREEN + " ===");
+            } else {
+                sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + ChatColor.GREEN + " ===");
             }
             for (World world : worlds) {
                 if (flags.contains(Flag.INFO)) {
@@ -129,10 +180,26 @@ public class Cleaner extends JavaPlugin {
                 int ents = world.getEntities().size();
                 Iterator<Entity> iter = world.getEntities().iterator();
                 int cleaned = 0;
+                int vehicle = 0, tamed = 0, golem = 0, painting = 0, villager = 0;
                 while (iter.hasNext()) {
                     Entity e = iter.next();
                     if (cleanerCheck(e, flags)) {
                         // all the checks passed, so we'll remove the entity
+                        if (e instanceof Vehicle) {
+                            vehicle++;
+                        }
+                        if (e instanceof Tameable && ((Tameable)e).isTamed()) {
+                            tamed++;
+                        }
+                        if (e instanceof Painting) {
+                            painting++;
+                        }
+                        if (e instanceof IronGolem && ((IronGolem)e).isPlayerCreated()) {
+                            golem++;
+                        }
+                        if (e instanceof Villager) {
+                            villager++;
+                        }
                         e.remove();
                         iter.remove();
                         cleaned++;
@@ -140,10 +207,15 @@ public class Cleaner extends JavaPlugin {
                 }
                 String line = world.getName() + ": " + cleaned + "/" + ents + " entities removed";
                 sender.sendMessage(line);
+                if (flags.contains(Flag.VERBOSE)) {
+                    line = "Including: " + vehicle + " vehicles, " + tamed + " pets, " + painting + " paintings, " + villager + " villagers, and " + golem + " golems.";
+                    sender.sendMessage(line);
+                }
             }
             if (!flags.contains(Flag.INFO)) {
-                sender.sendMessage(ChatColor.GOLD + "Entities " + (flags.contains(Flag.FORCE) ? "forcefully " : "") + "cleaned.");
-                if (sender instanceof Player) { log(">> " + ChatColor.GREEN + sender.getName() + ChatColor.WHITE + ": " + ChatColor.GOLD + "Entities " + (flags.contains(Flag.FORCE) ? "forcefully " : "") + "cleaned."); }
+                String line = ChatColor.GOLD + "Entities " + (flags.contains(Flag.FORCE) ? ChatColor.RED + "forcefully " : "") + ChatColor.GOLD + "cleaned.";
+                sender.sendMessage(line);
+                if (sender instanceof Player) { log(">> " + ChatColor.GREEN + sender.getName() + ChatColor.WHITE + ": " + line); }
             }
         }
         return true;
