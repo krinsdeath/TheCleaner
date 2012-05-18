@@ -1,9 +1,14 @@
 package net.krinsoft.thecleaner;
 
+import org.bukkit.World;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.WaterMob;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
@@ -82,6 +87,25 @@ public class WorldListener implements Listener {
             }
             plugin.log("Cleaned " + cleaned + " entities from " + event.getLocation().getWorld().getName());
             overloaded = false;
+        }
+    }
+
+    void creatureSpawn(CreatureSpawnEvent event) {
+        if (plugin.limits_enabled) {
+            World w = event.getEntity().getWorld();
+            Entity e = event.getEntity();
+            if (e instanceof Monster && w.getEntitiesByClass(Monster.class).size() >= plugin.limits_monsters) {
+                plugin.debug("Monster spawn limit reached.");
+                event.setCancelled(true);
+            }
+            if (e instanceof Animals && w.getEntitiesByClass(Animals.class).size() >= plugin.limits_animals) {
+                plugin.debug("Animal spawn limit reached.");
+                event.setCancelled(true);
+            }
+            if (e instanceof WaterMob && w.getEntitiesByClass(WaterMob.class).size() >= plugin.limits_water) {
+                plugin.debug("Water animal spawn limit reached.");
+                event.setCancelled(true);
+            }
         }
     }
 

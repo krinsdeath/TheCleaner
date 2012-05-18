@@ -36,9 +36,15 @@ public class Cleaner extends JavaPlugin {
                     runner.sendMessage("Server clock is running slow. Consider removing some plugins.");
                 }
                 if (runtime < 1000) {
-                    runner.sendMessage("Server is performing excellently. 20 ticks took <1000ms to complete.");
+                    runner.sendMessage("Server performance: " + ChatColor.GREEN + "Excellent");
+                } else if (runtime > 1000 && runtime < 1200) {
+                    runner.sendMessage("Server performance: " + ChatColor.GOLD + "Average");
+                } else if (runtime > 1200 && runtime < 1500) {
+                    runner.sendMessage("Server performance: " + ChatColor.RED + "Poor");
+                } else {
+                    runner.sendMessage("Server performance: " + ChatColor.GRAY + "Terrible");
                 }
-                runner.sendMessage("Expected 20 ticks, got " + ticks + ".");
+                runner.sendMessage("Expected 20 ticks, got " + ticks + ". (" + runtime + "ms)");
                 getServer().getScheduler().cancelTask(timerID);
                 throw new RuntimeException("Clock time exceeded.");
             }
@@ -51,6 +57,11 @@ public class Cleaner extends JavaPlugin {
     public boolean clean_on_load = true;
     public String clean_on_load_flags = "";
 
+    public boolean limits_enabled = true;
+    public int limits_monsters = 100;
+    public int limits_animals = 25;
+    public int limits_water = 5;
+
     private int timerID;
 
     public void onEnable() {
@@ -59,6 +70,10 @@ public class Cleaner extends JavaPlugin {
         clean_on_overload_total = getConfig().getInt("overload.total", 5000);
         clean_on_load = getConfig().getBoolean("startup.clean", true);
         clean_on_load_flags = getConfig().getString("startup.flags", "");
+        limits_enabled = getConfig().getBoolean("limits.enabled", true);
+        limits_monsters = getConfig().getInt("limits.monsters", 100);
+        limits_animals = getConfig().getInt("limits.animals", 25);
+        limits_water = getConfig().getInt("limits.water", 5);
         dumpConfig();
         saveConfig();
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
@@ -72,10 +87,17 @@ public class Cleaner extends JavaPlugin {
 
     private void dumpConfig() {
         getConfig().set("debug", debug);
+        // cleanup on entity overload
         getConfig().set("overload.clean", clean_on_overload);
         getConfig().set("overload.total", clean_on_overload_total);
+        // cleanup at world loading
         getConfig().set("startup.clean", clean_on_load);
         getConfig().set("startup.flags", clean_on_load_flags);
+        // spawn limiting
+        getConfig().set("limits.enabled", limits_enabled);
+        getConfig().set("limits.monsters", limits_monsters);
+        getConfig().set("limits.animals", limits_animals);
+        getConfig().set("limits.water", limits_water);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
