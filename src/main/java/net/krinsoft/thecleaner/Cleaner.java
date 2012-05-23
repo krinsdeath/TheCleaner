@@ -18,6 +18,7 @@ import java.util.Set;
  */
 public class Cleaner extends JavaPlugin {
     private class Clock implements Runnable {
+        private int ID = 0;
         private int ticks = 0;
         private long started;
         private CommandSender runner;
@@ -45,8 +46,10 @@ public class Cleaner extends JavaPlugin {
                     runner.sendMessage("Server performance: " + ChatColor.GRAY + "Terrible");
                 }
                 runner.sendMessage("Expected 20 ticks, got " + ticks + ". (" + runtime + "ms)");
-                getServer().getScheduler().cancelTask(timerID);
-                throw new RuntimeException("Clock time exceeded.");
+                getServer().getScheduler().cancelTask(ID);
+                if (getServer().getScheduler().isCurrentlyRunning(ID)) {
+                    throw new RuntimeException("Clock time exceeded.");
+                }
             }
         }
     }
@@ -61,8 +64,6 @@ public class Cleaner extends JavaPlugin {
     public int limits_monsters = 100;
     public int limits_animals = 25;
     public int limits_water = 5;
-
-    private int timerID;
 
     public void onEnable() {
         debug = getConfig().getBoolean("debug", false);
@@ -110,7 +111,11 @@ public class Cleaner extends JavaPlugin {
             sender.sendMessage("Maximum memory: " + (maxMemory / 1024L / 1024L) + "MB");
             sender.sendMessage("Allocated: " + (allocated / 1024L / 1024L) + "MB");
             sender.sendMessage("Free: " + (free / 1024L / 1024L) + "MB");
-            timerID = getServer().getScheduler().scheduleSyncRepeatingTask(this, clock, 0L, 1L);
+            try {
+                clock.ID = getServer().getScheduler().scheduleSyncRepeatingTask(this, clock, 0L, 1L);
+            } catch (RuntimeException e) {
+                debug(e.getLocalizedMessage());
+            }
         }
         if (cmd.getName().equals("cleanup")) {
             Set<Flag> flags = EnumSet.noneOf(Flag.class);
