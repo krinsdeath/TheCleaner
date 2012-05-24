@@ -140,9 +140,6 @@ public class Cleaner extends JavaPlugin {
                 if (arg.equals("--painting") && check(sender, "painting")) {
                     flags.add(Flag.PAINTING); continue;
                 }
-                if (arg.equals("--golem") && check(sender, "golem")) {
-                    flags.add(Flag.GOLEM); continue;
-                }
                 if (arg.equals("--pet") && check(sender, "pet")) {
                     flags.add(Flag.PET); continue;
                 }
@@ -221,9 +218,6 @@ public class Cleaner extends JavaPlugin {
                         if (e instanceof Painting) {
                             painting++;
                         }
-                        if (e instanceof IronGolem && ((IronGolem)e).isPlayerCreated()) {
-                            golem++;
-                        }
                         if (e instanceof Villager) {
                             villager++;
                         }
@@ -279,11 +273,6 @@ public class Cleaner extends JavaPlugin {
         if (!(e instanceof Vehicle) && flags.contains(Flag.VEHICLE)) {
             // this isn't a vehicle, and vehicle was specified
             return false;
-        }
-        if (e instanceof Golem) {
-            if (e instanceof IronGolem && ((IronGolem)e).isPlayerCreated() && !flags.contains(Flag.GOLEM)) {
-                if (!flags.contains(Flag.FORCE)) { return false; }
-            }
         }
         if (e instanceof Villager && !flags.contains(Flag.VILLAGER)) {
             if (!flags.contains(Flag.FORCE)) { return false; }
