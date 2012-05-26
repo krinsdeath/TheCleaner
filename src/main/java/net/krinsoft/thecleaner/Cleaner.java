@@ -21,10 +21,10 @@ public class Cleaner extends JavaPlugin {
         private int ID = 0;
         private int ticks = 0;
         private long started;
-        private CommandSender runner;
+        private String runner;
 
         public Clock(CommandSender sender) {
-            runner = sender;
+            runner = sender.getName();
             started = System.currentTimeMillis();
         }
 
@@ -33,19 +33,23 @@ public class Cleaner extends JavaPlugin {
             ticks++;
             long runtime = System.currentTimeMillis() - started;
             if (runtime >= 1000 || ticks == 20) {
+                CommandSender sender = getServer().getPlayer(runner);
+                if (sender == null) {
+                    sender = getServer().getConsoleSender();
+                }
                 if (ticks < 15) {
-                    runner.sendMessage("Server clock is running slow. Consider removing some plugins.");
+                    sender.sendMessage("Server clock is running slow. Consider removing some plugins.");
                 }
-                if (runtime < 1000) {
-                    runner.sendMessage("Server performance: " + ChatColor.GREEN + "Excellent");
+                if (runtime <= 1000) {
+                    sender.sendMessage("Server performance: " + ChatColor.GREEN + "Excellent");
                 } else if (runtime > 1000 && runtime < 1200) {
-                    runner.sendMessage("Server performance: " + ChatColor.GOLD + "Average");
+                    sender.sendMessage("Server performance: " + ChatColor.GOLD + "Average");
                 } else if (runtime > 1200 && runtime < 1500) {
-                    runner.sendMessage("Server performance: " + ChatColor.RED + "Poor");
+                    sender.sendMessage("Server performance: " + ChatColor.RED + "Poor");
                 } else {
-                    runner.sendMessage("Server performance: " + ChatColor.GRAY + "Terrible");
+                    sender.sendMessage("Server performance: " + ChatColor.GRAY + "Terrible");
                 }
-                runner.sendMessage("Expected 20 ticks, got " + ticks + ". (" + runtime + "ms)");
+                sender.sendMessage("Expected 20 ticks, got " + ticks + ". (" + runtime + "ms)");
                 getServer().getScheduler().cancelTask(ID);
                 if (getServer().getScheduler().isCurrentlyRunning(ID)) {
                     throw new RuntimeException("Clock time exceeded.");
@@ -108,6 +112,12 @@ public class Cleaner extends JavaPlugin {
             long allocated  = runtime.totalMemory();
             long free       = runtime.freeMemory();
             Clock clock = new Clock(sender);
+            if (args.length > 0 && (args[0].equalsIgnoreCase("--verbose") || args[0].equalsIgnoreCase("-v"))) {
+                String os = System.getProperty("os.name") + " (" + System.getProperty("os.version") + ") - " + System.getProperty("os.arch");
+                String version = System.getProperty("java.vendor") + " " + System.getProperty("java.version");
+                sender.sendMessage("OS: " + os);
+                sender.sendMessage("Java Version: " + version);
+            }
             sender.sendMessage("Maximum memory: " + (maxMemory / 1024L / 1024L) + "MB");
             sender.sendMessage("Allocated: " + (allocated / 1024L / 1024L) + "MB");
             sender.sendMessage("Free: " + (free / 1024L / 1024L) + "MB");
@@ -140,6 +150,9 @@ public class Cleaner extends JavaPlugin {
                 if (arg.equals("--painting") && check(sender, "painting")) {
                     flags.add(Flag.PAINTING); continue;
                 }
+                if (arg.equals("--monster") && check(sender, "monster")) {
+                    flags.add(Flag.MONSTER); continue;
+                }
                 if (arg.equals("--golem") && check(sender, "golem")) {
                     flags.add(Flag.GOLEM); continue;
                 }
@@ -155,6 +168,7 @@ public class Cleaner extends JavaPlugin {
                     debug = !debug;
                     sender.sendMessage("Debug mode is: " + (debug ? "enabled" : "disabled"));
                     getConfig().set("debug", debug);
+                    saveConfig();
                 } else {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to toggle Debug mode.");
                 }
@@ -274,6 +288,10 @@ public class Cleaner extends JavaPlugin {
         }
         if (!(e instanceof Painting) && flags.contains(Flag.PAINTING)) {
             // this isn't a painting, and painting was specified
+            return false;
+        }
+        if (!(e instanceof Monster) && flags.contains(Flag.MONSTER)) {
+            // this isn't a monster, and monster was specified
             return false;
         }
         if (!(e instanceof Vehicle) && flags.contains(Flag.VEHICLE)) {

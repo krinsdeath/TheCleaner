@@ -10,6 +10,7 @@ public enum Flag {
     ALL,
     VEHICLE,
     PAINTING,
+    MONSTER,
     GOLEM,
     PET,
     VILLAGER
