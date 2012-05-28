@@ -153,6 +153,12 @@ public class Cleaner extends JavaPlugin {
                 if (arg.equals("--monster") && check(sender, "monster")) {
                     flags.add(Flag.MONSTER); continue;
                 }
+                if (arg.equals("--animal") && check(sender, "animal")) {
+                    flags.add(Flag.ANIMAL); continue;
+                }
+                if (arg.equals("--watermob") && check(sender, "watermob")) {
+                    flags.add(Flag.WATERMOB); continue;
+                }
                 if (arg.equals("--golem") && check(sender, "golem")) {
                     flags.add(Flag.GOLEM); continue;
                 }
@@ -180,7 +186,7 @@ public class Cleaner extends JavaPlugin {
                     for (String arg : args) {
                         if (arg.equalsIgnoreCase("--all")) {
                             if (!check(sender, "all")) {
-                                sender.sendMessage(ChatColor.RED + "You do not have permission to clear all entities.");
+                                sender.sendMessage(ChatColor.RED + "You do not have permission to clear every world's entities.");
                                 return true;
                             }
                             worlds.clear();
@@ -291,7 +297,15 @@ public class Cleaner extends JavaPlugin {
             return false;
         }
         if (!(e instanceof Monster) && flags.contains(Flag.MONSTER)) {
-            // this isn't a monster, and monster was specified
+            // monster was specified, but this isn't a monster
+            return false;
+        }
+        if (!(e instanceof Animals) && flags.contains(Flag.ANIMAL)) {
+            // animal was specified, but this isn't an animal
+            return false;
+        }
+        if (!(e instanceof WaterMob) && flags.contains(Flag.WATERMOB)) {
+            // watermob was specified, but this isn't a watermob
             return false;
         }
         if (!(e instanceof Vehicle) && flags.contains(Flag.VEHICLE)) {

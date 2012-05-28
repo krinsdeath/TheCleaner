@@ -44,6 +44,15 @@ public class WorldListener implements Listener {
             if (flag.equals("--painting")) {
                 flags.add(Flag.PAINTING);
             }
+            if (flag.equals("--monster")) {
+                flags.add(Flag.MONSTER);
+            }
+            if (flag.equals("--animal")) {
+                flags.add(Flag.ANIMAL);
+            }
+            if (flag.equals("--watermob")) {
+                flags.add(Flag.WATERMOB);
+            }
             if (flag.equals("--golem")) {
                 flags.add(Flag.GOLEM);
             }

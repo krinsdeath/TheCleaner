@@ -11,6 +11,8 @@ public enum Flag {
     VEHICLE,
     PAINTING,
     MONSTER,
+    ANIMAL,
+    WATERMOB,
     GOLEM,
     PET,
     VILLAGER
