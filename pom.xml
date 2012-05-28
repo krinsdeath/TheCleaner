@@ -19,6 +19,10 @@
             <id>bukkit-repo</id>
             <url>http://repo.bukkit.org/content/groups/public</url>
         </repository>
+        <repository>
+            <id>krinsoft</id>
+            <url>http://files.krinsoft.net:8085/nexus/content/groups/public</url>
+        </repository>
     </repositories>
 
     <ciManagement>
@@ -76,5 +80,13 @@
             <type>jar</type>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>ks-releases</id>
+            <name>KrinSoft Releases</name>
+            <url>http://files.krinsoft.net:8085/nexus/content/repositories/ks-releases</url>
+        </repository>
+    </distributionManagement>
 
 </project>
