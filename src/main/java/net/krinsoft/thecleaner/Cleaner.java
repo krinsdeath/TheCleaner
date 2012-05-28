@@ -256,7 +256,7 @@ public class Cleaner extends JavaPlugin {
             if (!flags.contains(Flag.INFO)) {
                 String line = ChatColor.GOLD + "Entities " + (flags.contains(Flag.FORCE) ? ChatColor.RED + "forcefully " : "") + ChatColor.GOLD + "cleaned.";
                 sender.sendMessage(line);
-                if (sender instanceof Player) { log(">> " + ChatColor.GREEN + sender.getName() + ChatColor.WHITE + ": " + line); }
+                if (sender instanceof Player) { log(">> " + sender.getName() + ": " + ChatColor.stripColor(line)); }
             }
         }
         return true;
