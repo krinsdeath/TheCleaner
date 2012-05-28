@@ -47,6 +47,15 @@ public class WorldListener implements Listener {
             if (flag.equals("--villager")) {
                 flags.add(Flag.VILLAGER);
             }
+            if (flag.equals("--monster")) {
+                flags.add(Flag.MONSTER);
+            }
+            if (flag.equals("--animal")) {
+                flags.add(Flag.ANIMAL);
+            }
+            if (flag.equals("--watermob")) {
+                flags.add(Flag.WATERMOB);
+            }
         }
         Iterator<Entity> iterator = event.getWorld().getEntities().iterator();
         int cleaned = 0;

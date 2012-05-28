@@ -266,6 +266,18 @@ public class Cleaner extends JavaPlugin {
             // painting wasn't specified, so we're ignoring this entity
             if (!flags.contains(Flag.FORCE)) { return false; }
         }
+        if (!(e instanceof Monster) && flags.contains(Flag.MONSTER)) {
+            // monster was specified, but this isn't a monster
+            return false;
+        }
+        if (!(e instanceof Animals) && flags.contains(Flag.ANIMAL)) {
+            // animal was specified, but this isn't an animal
+            return false;
+        }
+        if (!(e instanceof WaterMob) && flags.contains(Flag.WATERMOB)) {
+            // watermob was specified, but this isn't a watermob
+            return false;
+        }
         if (!(e instanceof Painting) && flags.contains(Flag.PAINTING)) {
             // this isn't a painting, and painting was specified
             return false;
