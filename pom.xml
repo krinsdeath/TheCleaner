@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.krinsoft</groupId>
-    <artifactId>thecleaner</artifactId>
+    <artifactId>thecleaner-tekkit</artifactId>
     <version>1.3</version>
-    <name>TheCleaner</name>
+    <name>TheCleaner-Tekkit</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,7 +45,7 @@
     </profiles>
 
     <build>
-        <finalName>${project.name}-Tekkit</finalName>
+        <finalName>${project.name}</finalName>
         <plugins>
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
