@@ -19,20 +19,38 @@ commands:
     description: Show pertinent information about the JVM
     usage: /<command>
 permissions:
-  thecleaner.all:
-    description: Allows the user to clean all the entities from all worlds.
+  thecleaner.system:
+    description: Allows the user to see system information.
+    default: op
+  thecleaner.debug:
+    description: Allows the user to toggle debug mode.
+    default: op
+  thecleaner.info:
+    description: Allows the user to list information about the world's entities.
+    default: op
+  thecleaner.verbose:
+    description: Adds more detailed messages to the cleaning process.
     default: op
   thecleaner.force:
     description: Allows the user to force cleanup of entities which otherwise wouldn't be cleaned.
     default: op
-  thecleaner.debug:
-    description: Allows the user to toggle debug mode.
+  thecleaner.all:
+    description: Allows the user to clean all the entities from all worlds.
     default: op
   thecleaner.vehicle:
     description: Allows the user to specify that ONLY vehicles are cleaned.
     default: op
   thecleaner.painting:
     description: Allows the user to specify that ONLY paintings are cleaned.
+    default: op
+  thecleaner.monster:
+    description: Allows the user to specify that ONLY monsters are cleaned.
+    default: op
+  thecleaner.animal:
+    description: Allows the user to specify that ONLY animals are cleaned.
+    default: op
+  thecleaner.watermob:
+    description: Allows the user to specify that ONLY watermobs are cleaned.
     default: op
   thecleaner.golem:
     description: Allows the user to specify that golems should be cleaned.
@@ -43,9 +61,6 @@ permissions:
   thecleaner.villager:
     description: Allows the user to specify that villagers should be cleaned.
     default: op
-  thecleaner.info:
-    description: Shows the entity count for each world.
-    default: true
   thecleaner.world.*:
     description: Allows the user to clean entities on all loaded worlds.
     default: op
@@ -53,10 +68,17 @@ permissions:
     description: Sets all Cleaner nodes to true
     default: op
     children:
-      thecleaner.all: true
+      thecleaner.system: true
       thecleaner.debug: true
-      thecleaner.force: true
       thecleaner.info: true
-      thecleaner.painting: true
+      thecleaner.verbose: true
+      thecleaner.force: true
+      thecleaner.all: true
       thecleaner.vehicle: true
+      thecleaner.painting: true
+      thecleaner.monster: true
+      thecleaner.animal: true
+      thecleaner.watermob: true
       thecleaner.golem: true
+      thecleaner.pet: true
+      thecleaner.villager: true

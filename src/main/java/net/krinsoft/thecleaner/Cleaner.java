@@ -106,7 +106,7 @@ public class Cleaner extends JavaPlugin {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equals("sysstat")) {
+        if (cmd.getName().equals("sysstat") && check(sender, "thecleaner.system")) {
             Runtime runtime = Runtime.getRuntime();
             long maxMemory  = runtime.maxMemory();
             long allocated  = runtime.totalMemory();
