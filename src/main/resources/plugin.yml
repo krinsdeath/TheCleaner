@@ -22,8 +22,14 @@ permissions:
   thecleaner.system:
     description: Allows the user to see system information.
     default: op
+  thecleaner.all:
+    description: Allows the user to clean all the entities from all worlds.
+    default: op
   thecleaner.debug:
     description: Allows the user to toggle debug mode.
+    default: op
+  thecleaner.broadcast:
+    description: Allows the user to broadcast cleanups to the server.
     default: op
   thecleaner.info:
     description: Allows the user to list information about the world's entities.
@@ -33,9 +39,6 @@ permissions:
     default: op
   thecleaner.force:
     description: Allows the user to force cleanup of entities which otherwise wouldn't be cleaned.
-    default: op
-  thecleaner.all:
-    description: Allows the user to clean all the entities from all worlds.
     default: op
   thecleaner.vehicle:
     description: Allows the user to specify that ONLY vehicles are cleaned.
@@ -69,11 +72,12 @@ permissions:
     default: op
     children:
       thecleaner.system: true
+      thecleaner.broadcast: true
+      thecleaner.all: true
       thecleaner.debug: true
       thecleaner.info: true
       thecleaner.verbose: true
       thecleaner.force: true
-      thecleaner.all: true
       thecleaner.vehicle: true
       thecleaner.painting: true
       thecleaner.monster: true

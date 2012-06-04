@@ -4,10 +4,12 @@ package net.krinsoft.thecleaner;
  * @author krinsdeath
  */
 public enum Flag {
+    ALL,
+    DEBUG,
+    BROADCAST,
     INFO,
     VERBOSE,
     FORCE,
-    ALL,
     VEHICLE,
     PAINTING,
     MONSTER,

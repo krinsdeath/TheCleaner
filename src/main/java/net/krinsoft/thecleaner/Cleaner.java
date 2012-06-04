@@ -8,10 +8,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author krinsdeath
@@ -128,96 +125,121 @@ public class Cleaner extends JavaPlugin {
             }
         }
         if (cmd.getName().equals("cleanup")) {
+            List<String> arguments = new ArrayList<String>(Arrays.asList(args));
+            Iterator<String> iterator = arguments.iterator();
             Set<Flag> flags = EnumSet.noneOf(Flag.class);
-            for (String arg : args) {
+            while (iterator.hasNext()) {
+                String arg = iterator.next();
+                if (arg.equals("--all") && check(sender, "all")) {
+                    iterator.remove();
+                    flags.add(Flag.ALL); continue;
+                }
+                if (arg.equals("--debug") && check(sender, "debug")) {
+                    iterator.remove();
+                    flags.clear();
+                    flags.add(Flag.DEBUG); continue;
+                }
+                if (arg.equals("--broadcast") && check(sender, "broadcast")) {
+                    iterator.remove();
+                    flags.add(Flag.BROADCAST); continue;
+                }
                 if (arg.equals("--info") && check(sender, "info")) {
+                    iterator.remove();
                     flags.clear();
                     flags.add(Flag.INFO); break;
                 }
                 if (arg.equals("--verbose") && check(sender, "verbose")) {
+                    iterator.remove();
                     flags.add(Flag.VERBOSE); continue;
                 }
                 if (arg.equals("--force") && check(sender, "force")) {
+                    iterator.remove();
                     flags.clear();
                     flags.add(Flag.FORCE); break;
                 }
                 if (arg.equals("--all") && check(sender, "all")) {
+                    iterator.remove();
                     flags.add(Flag.ALL); continue;
                 }
                 if (arg.equals("--vehicle") && check(sender, "vehicle")) {
+                    iterator.remove();
                     flags.add(Flag.VEHICLE); continue;
                 }
                 if (arg.equals("--painting") && check(sender, "painting")) {
+                    iterator.remove();
                     flags.add(Flag.PAINTING); continue;
                 }
                 if (arg.equals("--monster") && check(sender, "monster")) {
+                    iterator.remove();
                     flags.add(Flag.MONSTER); continue;
                 }
                 if (arg.equals("--animal") && check(sender, "animal")) {
+                    iterator.remove();
                     flags.add(Flag.ANIMAL); continue;
                 }
                 if (arg.equals("--watermob") && check(sender, "watermob")) {
+                    iterator.remove();
                     flags.add(Flag.WATERMOB); continue;
                 }
                 if (arg.equals("--golem") && check(sender, "golem")) {
+                    iterator.remove();
                     flags.add(Flag.GOLEM); continue;
                 }
                 if (arg.equals("--pet") && check(sender, "pet")) {
+                    iterator.remove();
                     flags.add(Flag.PET); continue;
                 }
                 if (arg.equals("--villager") && check(sender, "villager")) {
+                    iterator.remove();
                     flags.add(Flag.VILLAGER);
                 }
             }
-            if (args.length == 1 && args[0].equalsIgnoreCase("--debug")) {
-                if (check(sender, "debug")) {
-                    debug = !debug;
-                    sender.sendMessage("Debug mode is: " + (debug ? "enabled" : "disabled"));
-                    getConfig().set("debug", debug);
-                    saveConfig();
-                } else {
-                    sender.sendMessage(ChatColor.RED + "You do not have permission to toggle Debug mode.");
-                }
+            if (flags.contains(Flag.DEBUG)) {
+                debug = !debug;
+                sender.sendMessage("Debug mode is: " + (debug ? "enabled" : "disabled"));
+                getConfig().set("debug", debug);
+                saveConfig();
                 return true;
             }
             List<World> worlds = getServer().getWorlds();
             if (sender instanceof Player) {
-                if (args.length >= 1) {
-                    for (String arg : args) {
-                        if (arg.equalsIgnoreCase("--all")) {
-                            if (!check(sender, "all")) {
-                                sender.sendMessage(ChatColor.RED + "You do not have permission to clear every world's entities.");
-                                return true;
-                            }
-                            worlds.clear();
-                            worlds.addAll(getServer().getWorlds());
-                        } else {
-                            if (arg.equalsIgnoreCase("--all") || arg.equalsIgnoreCase("--debug") || arg.equalsIgnoreCase("--force") || arg.equalsIgnoreCase("--vehicle") || arg.equalsIgnoreCase("--info")) { continue; }
-                            World w = getServer().getWorld(arg);
-                            if (w != null) {
-                                if (!check(sender, "world." + w.getName())) {
-                                    sender.sendMessage(ChatColor.RED + "You do not have permission to clear entities in that world.");
-                                    return true;
-                                }
-                                worlds.clear();
-                                worlds.add(w);
-                            } else {
-                                sender.sendMessage(ChatColor.RED + "Unknown world.");
-                                return true;
-                            }
+                if (flags.contains(Flag.ALL)) {
+                    worlds.clear();
+                    worlds.addAll(getServer().getWorlds());
+                }
+                if (arguments.size() > 0) {
+                    worlds.clear();
+                    for (String arg : arguments) {
+                        World w = getServer().getWorld(arg);
+                        if (w == null) {
+                            sender.sendMessage(ChatColor.RED + "Unknown world: " + ChatColor.DARK_RED + arg);
+                            continue;
+                        }
+                        if (check(sender, "world." + w.getName())) {
+                            worlds.add(w);
                         }
                     }
                 } else {
                     worlds.clear();
-                    worlds.add(((Player)sender).getWorld());
+                    World w = ((Player)sender).getWorld();
+                    if (check(sender, "world." + w.getName())) {
+                        worlds.add(((Player)sender).getWorld());
+                    }
                 }
             }
             if (flags.contains(Flag.FORCE)) {
                 sender.sendMessage(ChatColor.RED + "Warning! All entities other than players are being cleaned!");
             } else if (flags.contains(Flag.INFO)) {
                 sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "World information" + ChatColor.GREEN + " ===");
+            }
+            if (flags.contains(Flag.BROADCAST)) {
+                getServer().broadcastMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + ChatColor.GREEN + " ===");
             } else {
-                sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + ChatColor.GREEN + " ===");
+                sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + ChatColor.GREEN + " ===");
+            }
+            if (worlds.size() == 0) {
+                sender.sendMessage(ChatColor.RED + "No worlds specified. Aborting.");
+                return true;
             }
             for (World world : worlds) {
                 if (flags.contains(Flag.INFO)) {
@@ -227,7 +249,7 @@ public class Cleaner extends JavaPlugin {
                 int ents = world.getEntities().size();
                 Iterator<Entity> iter = world.getEntities().iterator();
                 int cleaned = 0;
-                int vehicle = 0, tamed = 0, golem = 0, painting = 0, villager = 0;
+                int vehicle = 0, tamed = 0, golem = 0, painting = 0, villager = 0, monster = 0, animal = 0, watermob = 0, item = 0;
                 while (iter.hasNext()) {
                     Entity e = iter.next();
                     if (cleanerCheck(e, flags)) {
@@ -247,21 +269,38 @@ public class Cleaner extends JavaPlugin {
                         if (e instanceof Villager) {
                             villager++;
                         }
+                        if (e instanceof Monster) {
+                            monster++;
+                        }
+                        if (e instanceof Animals) {
+                            animal++;
+                        }
+                        if (e instanceof WaterMob) {
+                            watermob++;
+                        }
+                        if (e instanceof Item) {
+                            item++;
+                        }
                         e.remove();
                         iter.remove();
                         cleaned++;
                     }
                 }
-                String line = world.getName() + ": " + cleaned + "/" + ents + " entities removed";
+                String line = ChatColor.AQUA + world.getName() + ChatColor.WHITE + ": " + cleaned + "/" + ents + " entities removed";
                 sender.sendMessage(line);
                 if (flags.contains(Flag.VERBOSE)) {
-                    line = "Including: " + vehicle + " vehicles, " + tamed + " pets, " + painting + " paintings, " + villager + " villagers, and " + golem + " golems.";
-                    sender.sendMessage(line);
+                    sender.sendMessage("Explicits: " + vehicle + " vehicles, " + painting + " paintings, " + villager + " villagers, ");
+                    sender.sendMessage("Owned: " + tamed + " pets, " + golem + " golems,");
+                    sender.sendMessage("General: " + monster + " monsters, " + animal + " animals, " + watermob + " water mobs, and " + item + " items.");
                 }
             }
             if (!flags.contains(Flag.INFO)) {
                 String line = ChatColor.GOLD + "Entities " + (flags.contains(Flag.FORCE) ? ChatColor.RED + "forcefully " : "") + ChatColor.GOLD + "cleaned.";
-                sender.sendMessage(line);
+                if (flags.contains(Flag.BROADCAST)) {
+                    getServer().broadcastMessage(line);
+                } else {
+                    sender.sendMessage(line);
+                }
                 if (sender instanceof Player) { log(">> " + sender.getName() + ": " + ChatColor.stripColor(line)); }
             }
         }
@@ -281,7 +320,11 @@ public class Cleaner extends JavaPlugin {
     }
 
     public boolean check(CommandSender sender, String val) {
-        return sender instanceof ConsoleCommandSender || sender.hasPermission("thecleaner." + val);
+        boolean checked = sender instanceof ConsoleCommandSender || sender.hasPermission("thecleaner." + val);
+        if (!checked) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use the " + ChatColor.DARK_GREEN + val + ChatColor.RED + " flag.");
+        }
+        return checked;
     }
 
     public boolean cleanerCheck(Entity e, Set<Flag> flags) {
