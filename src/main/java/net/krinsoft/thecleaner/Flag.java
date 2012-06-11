@@ -17,5 +17,6 @@ public enum Flag {
     WATERMOB,
     GOLEM,
     PET,
-    VILLAGER
+    VILLAGER,
+    ITEM
 }

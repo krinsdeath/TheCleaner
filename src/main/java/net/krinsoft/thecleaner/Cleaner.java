@@ -61,21 +61,15 @@ public class Cleaner extends JavaPlugin {
     public boolean clean_on_load = true;
     public String clean_on_load_flags = "";
 
-    public boolean limits_enabled = true;
-    public int limits_monsters = 100;
-    public int limits_animals = 25;
-    public int limits_water = 5;
-
     public void onEnable() {
         debug = getConfig().getBoolean("debug", false);
         clean_on_overload = getConfig().getBoolean("overload.clean", true);
         clean_on_overload_total = getConfig().getInt("overload.total", 5000);
         clean_on_load = getConfig().getBoolean("startup.clean", true);
         clean_on_load_flags = getConfig().getString("startup.flags", "");
-        limits_enabled = getConfig().getBoolean("limits.enabled", true);
-        limits_monsters = getConfig().getInt("limits.monsters", 100);
-        limits_animals = getConfig().getInt("limits.animals", 25);
-        limits_water = getConfig().getInt("limits.water", 5);
+        if (getConfig().get("limits.enabled") != null) {
+            getConfig().set("limits", null);
+        }
         dumpConfig();
         saveConfig();
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
@@ -95,11 +89,6 @@ public class Cleaner extends JavaPlugin {
         // cleanup at world loading
         getConfig().set("startup.clean", clean_on_load);
         getConfig().set("startup.flags", clean_on_load_flags);
-        // spawn limiting
-        getConfig().set("limits.enabled", limits_enabled);
-        getConfig().set("limits.monsters", limits_monsters);
-        getConfig().set("limits.animals", limits_animals);
-        getConfig().set("limits.water", limits_water);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -191,7 +180,11 @@ public class Cleaner extends JavaPlugin {
                 }
                 if (arg.equals("--villager") && check(sender, "villager")) {
                     iterator.remove();
-                    flags.add(Flag.VILLAGER);
+                    flags.add(Flag.VILLAGER); continue;
+                }
+                if (arg.equals("--item") && check(sender, "item")) {
+                    iterator.remove();
+                    flags.add(Flag.ITEM);
                 }
             }
             if (flags.contains(Flag.DEBUG)) {
@@ -235,7 +228,9 @@ public class Cleaner extends JavaPlugin {
             if (flags.contains(Flag.BROADCAST)) {
                 getServer().broadcastMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + ChatColor.GREEN + " ===");
             } else {
-                sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + ChatColor.GREEN + " ===");
+                if (!flags.contains(Flag.INFO)) {
+                    sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + ChatColor.GREEN + " ===");
+                }
             }
             if (worlds.size() == 0) {
                 sender.sendMessage(ChatColor.RED + "No worlds specified. Aborting.");
@@ -353,6 +348,14 @@ public class Cleaner extends JavaPlugin {
         }
         if (!(e instanceof Vehicle) && flags.contains(Flag.VEHICLE)) {
             // this isn't a vehicle, and vehicle was specified
+            return false;
+        }
+        if (!(e instanceof Item) && flags.contains(Flag.ITEM)) {
+            // this isn't an item, and item was specified
+            return false;
+        }
+        if (e instanceof Item && e.getTicksLived() < 1200 && flags.contains(Flag.ITEM)) {
+            // this is an item, it's younger than 1 minute, and item was specified
             return false;
         }
         if (e instanceof Golem) {
