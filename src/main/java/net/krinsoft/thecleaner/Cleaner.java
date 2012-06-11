@@ -238,7 +238,9 @@ public class Cleaner extends JavaPlugin {
             }
             for (World world : worlds) {
                 if (flags.contains(Flag.INFO)) {
-                    sender.sendMessage(ChatColor.GREEN + world.getName() + ChatColor.WHITE + " - " + ChatColor.GOLD + world.getEntities().size() + " entities");
+                    String line = getEnvironment(world) + ChatColor.WHITE + " - " + ChatColor.GOLD + world.getEntities().size() + ChatColor.WHITE + " entities";
+                    line += ChatColor.WHITE + " in " + ChatColor.GOLD + world.getLoadedChunks().length + ChatColor.WHITE + " chunks.";
+                    sender.sendMessage(line);
                     continue;
                 }
                 int ents = world.getEntities().size();
@@ -383,6 +385,15 @@ public class Cleaner extends JavaPlugin {
             return false;
         }
         return true;
+    }
+
+    public String getEnvironment(World world) {
+        switch (world.getEnvironment()) {
+            case NORMAL: return ChatColor.GREEN + world.getName();
+            case NETHER: return ChatColor.RED + world.getName();
+            case THE_END: return ChatColor.GRAY + world.getName();
+            default: return world.getName();
+        }
     }
 
 }

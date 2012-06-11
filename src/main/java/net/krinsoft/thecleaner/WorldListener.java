@@ -9,6 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -29,6 +31,13 @@ public class WorldListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     void worldLoad(WorldLoadEvent event) {
+        Permission perm = new Permission("thecleaner.world." + event.getWorld().getName());
+        perm.setDescription("Allows the attached user to clean entities on the indicated world: " + event.getWorld().getName());
+        perm.setDefault(PermissionDefault.OP);
+        perm.addParent("thecleaner.world.*", true);
+        if (plugin.getServer().getPluginManager().getPermission(perm.getName()) == null) {
+            plugin.getServer().getPluginManager().addPermission(perm);
+        }
         if (!plugin.clean_on_load) { return; }
         Set<Flag> flags = EnumSet.noneOf(Flag.class);
         String flagstring = plugin.clean_on_load_flags;

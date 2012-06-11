@@ -64,6 +64,9 @@ permissions:
   thecleaner.villager:
     description: Allows the user to specify that villagers should be cleaned.
     default: op
+  thecleaner.item:
+    description: Allows the user to specify that ONLY items are cleaned.
+    default: op
   thecleaner.world.*:
     description: Allows the user to clean entities on all loaded worlds.
     default: op
@@ -86,3 +89,5 @@ permissions:
       thecleaner.golem: true
       thecleaner.pet: true
       thecleaner.villager: true
+      thecleaner.item: true
+      thecleaner.world.*: true

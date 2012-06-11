@@ -6,7 +6,7 @@
 
     <groupId>net.krinsoft</groupId>
     <artifactId>thecleaner</artifactId>
-    <version>1.4</version>
+    <version>1.5</version>
     <name>TheCleaner</name>
 
     <properties>
