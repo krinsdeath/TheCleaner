@@ -18,5 +18,6 @@ public enum Flag {
     GOLEM,
     PET,
     VILLAGER,
-    ITEM
+    ITEM,
+    RADIUS
 }

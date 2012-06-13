@@ -1,6 +1,7 @@
 package net.krinsoft.thecleaner;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -117,6 +118,7 @@ public class Cleaner extends JavaPlugin {
             List<String> arguments = new ArrayList<String>(Arrays.asList(args));
             Iterator<String> iterator = arguments.iterator();
             Set<Flag> flags = EnumSet.noneOf(Flag.class);
+            int radius = 0;
             while (iterator.hasNext()) {
                 String arg = iterator.next();
                 if (arg.equals("--all") && check(sender, "all")) {
@@ -186,6 +188,22 @@ public class Cleaner extends JavaPlugin {
                     iterator.remove();
                     flags.add(Flag.ITEM);
                 }
+
+                if (arg.startsWith("--radius") && check(sender, "radius")) {
+                    if (sender instanceof Player) {
+                        try {
+                            radius = Integer.parseInt(arg.split("=")[1]);
+                            flags.add(Flag.RADIUS);
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            sender.sendMessage(ChatColor.RED + "No radius setting specified.");
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "Error parsing argument: expected number");
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "You have to be a player to specify a radius.");
+                    }
+                    iterator.remove();
+                }
             }
             if (flags.contains(Flag.DEBUG)) {
                 debug = !debug;
@@ -196,11 +214,7 @@ public class Cleaner extends JavaPlugin {
             }
             List<World> worlds = getServer().getWorlds();
             if (sender instanceof Player) {
-                if (flags.contains(Flag.ALL)) {
-                    worlds.clear();
-                    worlds.addAll(getServer().getWorlds());
-                }
-                if (arguments.size() > 0) {
+                if (arguments.size() > 0 && !flags.contains(Flag.ALL)) {
                     worlds.clear();
                     for (String arg : arguments) {
                         World w = getServer().getWorld(arg);
@@ -214,9 +228,13 @@ public class Cleaner extends JavaPlugin {
                     }
                 } else {
                     worlds.clear();
-                    World w = ((Player)sender).getWorld();
-                    if (check(sender, "world." + w.getName())) {
-                        worlds.add(((Player)sender).getWorld());
+                    if (flags.contains(Flag.ALL)) {
+                        worlds.addAll(getServer().getWorlds());
+                    } else {
+                        World w = ((Player)sender).getWorld();
+                        if (check(sender, "world." + w.getName())) {
+                            worlds.add(((Player)sender).getWorld());
+                        }
                     }
                 }
             }
@@ -229,7 +247,7 @@ public class Cleaner extends JavaPlugin {
                 getServer().broadcastMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + ChatColor.GREEN + " ===");
             } else {
                 if (!flags.contains(Flag.INFO)) {
-                    sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + ChatColor.GREEN + " ===");
+                    sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Starting Cleaner" + (flags.contains(Flag.FORCE) ? " (" + ChatColor.RED + "Forced" + ChatColor.GOLD + ")" : "") + " - Flags: " + flags.toString() + ChatColor.GREEN + " ===");
                 }
             }
             if (worlds.size() == 0) {
@@ -250,6 +268,13 @@ public class Cleaner extends JavaPlugin {
                 while (iter.hasNext()) {
                     Entity e = iter.next();
                     if (cleanerCheck(e, flags)) {
+                        // check if the entity meets the radius requirement
+                        if (flags.contains(Flag.RADIUS)) {
+                            Location loc = ((Player)sender).getLocation();
+                            if (!(e.getLocation().distance(loc) <= radius)) {
+                                continue;
+                            }
+                        }
                         // all the checks passed, so we'll remove the entity
                         if (e instanceof Vehicle) {
                             vehicle++;
