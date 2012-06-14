@@ -93,7 +93,11 @@ public class Cleaner extends JavaPlugin {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equals("sysstat") && check(sender, "thecleaner.system")) {
+        if (cmd.getName().equals("sysstat")) {
+            if (!sender.hasPermission("thecleaner.system")) {
+                sender.sendMessage(ChatColor.RED + "You can't use this command.");
+                return true;
+            }
             Runtime runtime = Runtime.getRuntime();
             long maxMemory  = runtime.maxMemory();
             long allocated  = runtime.totalMemory();
@@ -115,12 +119,33 @@ public class Cleaner extends JavaPlugin {
             }
         }
         if (cmd.getName().equals("cleanup")) {
+            if (args.length == 0) {
+                showHelp(sender, "help");
+                return true;
+            }
             List<String> arguments = new ArrayList<String>(Arrays.asList(args));
+            List<String> worldList = new ArrayList<String>();
             Iterator<String> iterator = arguments.iterator();
             Set<Flag> flags = EnumSet.noneOf(Flag.class);
             int radius = 0;
+            String topic = null;
             while (iterator.hasNext()) {
                 String arg = iterator.next();
+                if (!arg.startsWith("--")) {
+                    iterator.remove();
+                    worldList.add(arg);
+                    continue;
+                }
+                if (arg.startsWith("--help")) {
+                    iterator.remove();
+                    flags.add(Flag.HELP);
+                    try {
+                        topic = arg.split("=")[1];
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        topic = "help";
+                    }
+                    break;
+                }
                 if (arg.equals("--all") && check(sender, "all")) {
                     iterator.remove();
                     flags.add(Flag.ALL); continue;
@@ -137,7 +162,7 @@ public class Cleaner extends JavaPlugin {
                 if (arg.equals("--info") && check(sender, "info")) {
                     iterator.remove();
                     flags.clear();
-                    flags.add(Flag.INFO); break;
+                    flags.add(Flag.INFO); continue;
                 }
                 if (arg.equals("--verbose") && check(sender, "verbose")) {
                     iterator.remove();
@@ -205,6 +230,10 @@ public class Cleaner extends JavaPlugin {
                     iterator.remove();
                 }
             }
+            if ((flags.isEmpty() || flags.contains(Flag.HELP)) && worldList.isEmpty()) {
+                showHelp(sender, topic);
+                return true;
+            }
             if (flags.contains(Flag.DEBUG)) {
                 debug = !debug;
                 sender.sendMessage("Debug mode is: " + (debug ? "enabled" : "disabled"));
@@ -213,28 +242,30 @@ public class Cleaner extends JavaPlugin {
                 return true;
             }
             List<World> worlds = getServer().getWorlds();
-            if (sender instanceof Player) {
-                if (arguments.size() > 0 && !flags.contains(Flag.ALL)) {
-                    worlds.clear();
-                    for (String arg : arguments) {
-                        World w = getServer().getWorld(arg);
-                        if (w == null) {
-                            sender.sendMessage(ChatColor.RED + "Unknown world: " + ChatColor.DARK_RED + arg);
-                            continue;
-                        }
-                        if (check(sender, "world." + w.getName())) {
-                            worlds.add(w);
-                        }
+            if (worldList.size() > 0 && !flags.contains(Flag.ALL)) {
+                worlds.clear();
+                for (String arg : worldList) {
+                    World w = getServer().getWorld(arg);
+                    if (w == null) {
+                        sender.sendMessage(ChatColor.RED + "Unknown world: " + ChatColor.DARK_RED + arg);
+                        continue;
                     }
+                    if (check(sender, "world." + w.getName())) {
+                        worlds.add(w);
+                    }
+                }
+            } else {
+                worlds.clear();
+                if (flags.contains(Flag.ALL)) {
+                    worlds.addAll(getServer().getWorlds());
                 } else {
-                    worlds.clear();
-                    if (flags.contains(Flag.ALL)) {
-                        worlds.addAll(getServer().getWorlds());
-                    } else {
+                    if (sender instanceof Player) {
                         World w = ((Player)sender).getWorld();
                         if (check(sender, "world." + w.getName())) {
                             worlds.add(((Player)sender).getWorld());
                         }
+                    } else {
+                        worlds.addAll(getServer().getWorlds());
                     }
                 }
             }
@@ -419,6 +450,30 @@ public class Cleaner extends JavaPlugin {
             case THE_END: return ChatColor.GRAY + world.getName();
             default: return world.getName();
         }
+    }
+
+    public void showHelp(CommandSender sender, String f) {
+        Flag flag = Flag.get(f);
+        if (!f.equalsIgnoreCase("help") && !check(sender, flag.name())) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to use that flag.");
+        }
+        sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Help: " + ChatColor.AQUA + flag.name() + ChatColor.GREEN + " ===");
+        sender.sendMessage(ChatColor.GREEN + "Description: " + ChatColor.GOLD + flag.desc());
+        sender.sendMessage(ChatColor.GREEN + "Usage: " + ChatColor.GOLD + flag.usage());
+        if (flag.equals(Flag.HELP)) {
+            sender.sendMessage("Topics:");
+            StringBuilder help = new StringBuilder();
+            for (Flag topic : Flag.values()) {
+                if (check(sender, topic.name(), true)) {
+                    help.append(topic.name()).append(", ");
+                }
+            }
+            sender.sendMessage(help.substring(0, help.length()-2));
+        }
+    }
+
+    public boolean check(CommandSender sender, String flag, boolean silent) {
+        return sender instanceof ConsoleCommandSender || sender.hasPermission("thecleaner." + flag);
     }
 
 }
