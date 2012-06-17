@@ -78,9 +78,9 @@ permissions:
     default: op
     children:
       thecleaner.system: true
-      thecleaner.broadcast: true
       thecleaner.all: true
       thecleaner.debug: true
+      thecleaner.broadcast: true
       thecleaner.info: true
       thecleaner.verbose: true
       thecleaner.force: true

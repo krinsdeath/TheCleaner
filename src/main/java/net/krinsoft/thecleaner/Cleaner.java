@@ -35,18 +35,24 @@ public class Cleaner extends JavaPlugin {
                 if (sender == null) {
                     sender = getServer().getConsoleSender();
                 }
-                if (ticks < 15) {
-                    sender.sendMessage("Server clock is running slow. Consider removing some plugins.");
+                if (ticks <= 10) {
+                    sender.sendMessage("Server clock is almost stopped. Seriously consider removing any CPU intensive plugins.");
+                } else if (ticks > 10 && ticks <= 15) {
+                    sender.sendMessage("Server clock is running slow. Consider removing CPU intensive plugins.");
+                } else if (ticks > 15 && ticks <=  18) {
+                    sender.sendMessage("Server clock is running a bit slow. Consider optimizing plugin settings.");
                 }
+                String performance;
                 if (runtime <= 1000) {
-                    sender.sendMessage("Server performance: " + ChatColor.GREEN + "Excellent");
-                } else if (runtime > 1000 && runtime < 1200) {
-                    sender.sendMessage("Server performance: " + ChatColor.GOLD + "Average");
-                } else if (runtime > 1200 && runtime < 1500) {
-                    sender.sendMessage("Server performance: " + ChatColor.RED + "Poor");
+                    performance = ChatColor.GREEN + "Excellent";
+                } else if (runtime > 1000 && runtime <= 1200) {
+                    performance = ChatColor.GOLD + "Average";
+                } else if (runtime > 1200 && runtime <= 1500) {
+                    performance = ChatColor.RED + "Poor";
                 } else {
-                    sender.sendMessage("Server performance: " + ChatColor.GRAY + "Terrible");
+                    performance = ChatColor.GRAY + "Terrible";
                 }
+                sender.sendMessage("Server performance: " + performance);
                 sender.sendMessage("Expected 20 ticks, got " + ticks + ". (" + runtime + "ms)");
                 getServer().getScheduler().cancelTask(ID);
                 if (getServer().getScheduler().isCurrentlyRunning(ID)) {
@@ -110,8 +116,8 @@ public class Cleaner extends JavaPlugin {
                 sender.sendMessage("Java Version: " + version);
             }
             sender.sendMessage("Maximum memory: " + (maxMemory / 1024L / 1024L) + "MB");
-            sender.sendMessage("Allocated: " + (allocated / 1024L / 1024L) + "MB");
-            sender.sendMessage("Free: " + (free / 1024L / 1024L) + "MB");
+            sender.sendMessage("Allocated (in use): " + (allocated / 1024L / 1024L) + "MB");
+            sender.sendMessage("Free (available): " + (free / 1024L / 1024L) + "MB");
             try {
                 clock.ID = getServer().getScheduler().scheduleSyncRepeatingTask(this, clock, 0L, 1L);
             } catch (RuntimeException e) {
@@ -131,11 +137,6 @@ public class Cleaner extends JavaPlugin {
             String topic = null;
             while (iterator.hasNext()) {
                 String arg = iterator.next();
-                if (!arg.startsWith("--")) {
-                    iterator.remove();
-                    worldList.add(arg);
-                    continue;
-                }
                 if (arg.startsWith("--help")) {
                     iterator.remove();
                     flags.add(Flag.HELP);
@@ -145,6 +146,11 @@ public class Cleaner extends JavaPlugin {
                         topic = "help";
                     }
                     break;
+                }
+                if (!arg.startsWith("--")) {
+                    iterator.remove();
+                    worldList.add(arg);
+                    continue;
                 }
                 if (arg.equals("--all") && check(sender, "all")) {
                     iterator.remove();
@@ -230,7 +236,7 @@ public class Cleaner extends JavaPlugin {
                     iterator.remove();
                 }
             }
-            if ((flags.isEmpty() || flags.contains(Flag.HELP)) && worldList.isEmpty()) {
+            if ((flags.isEmpty() && worldList.isEmpty()) || flags.contains(Flag.HELP)) {
                 showHelp(sender, topic);
                 return true;
             }
@@ -468,7 +474,11 @@ public class Cleaner extends JavaPlugin {
                     help.append(topic.name()).append(", ");
                 }
             }
-            sender.sendMessage(help.substring(0, help.length()-2));
+            if (help.length() > 0) {
+                sender.sendMessage(help.substring(0, help.length()-2));
+            } else {
+                sender.sendMessage("No topics available.");
+            }
         }
     }
 
