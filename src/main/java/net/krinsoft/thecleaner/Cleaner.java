@@ -176,8 +176,7 @@ public class Cleaner extends JavaPlugin {
                 }
                 if (arg.equals("--force") && check(sender, "force")) {
                     iterator.remove();
-                    flags.clear();
-                    flags.add(Flag.FORCE); break;
+                    flags.add(Flag.FORCE); continue;
                 }
                 if (arg.equals("--all") && check(sender, "all")) {
                     iterator.remove();
