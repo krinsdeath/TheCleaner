@@ -70,6 +70,9 @@ permissions:
   thecleaner.radius:
     description: Allows the user to specify that only entities within the given radius are cleaned.
     default: op
+  thecleaner.report:
+    description: Allows a user to print a detailed report of the cleaning.
+    default: op
   thecleaner.world.*:
     description: Allows the user to clean entities on all loaded worlds.
     default: op
@@ -94,4 +97,5 @@ permissions:
       thecleaner.villager: true
       thecleaner.item: true
       thecleaner.radius: true
+      thecleaner.report: true
       thecleaner.world.*: true

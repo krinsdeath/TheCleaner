@@ -30,7 +30,7 @@ public class Cleaner extends JavaPlugin {
         public void run() {
             ticks++;
             long runtime = System.currentTimeMillis() - started;
-            if (runtime >= 1000 || ticks == 20) {
+            if (runtime > 1500 || ticks == 20) {
                 CommandSender sender = getServer().getPlayer(runner);
                 if (sender == null) {
                     sender = getServer().getConsoleSender();
@@ -73,7 +73,7 @@ public class Cleaner extends JavaPlugin {
         clean_on_overload = getConfig().getBoolean("overload.clean", true);
         clean_on_overload_total = getConfig().getInt("overload.total", 5000);
         clean_on_load = getConfig().getBoolean("startup.clean", true);
-        clean_on_load_flags = getConfig().getString("startup.flags", "");
+        clean_on_load_flags = getConfig().getString("startup.flags", "--monster --item");
         if (getConfig().get("limits.enabled") != null) {
             getConfig().set("limits", null);
         }
@@ -218,7 +218,6 @@ public class Cleaner extends JavaPlugin {
                     iterator.remove();
                     flags.add(Flag.ITEM);
                 }
-
                 if (arg.startsWith("--radius") && check(sender, "radius")) {
                     if (sender instanceof Player) {
                         try {
@@ -233,6 +232,10 @@ public class Cleaner extends JavaPlugin {
                         sender.sendMessage(ChatColor.RED + "You have to be a player to specify a radius.");
                     }
                     iterator.remove();
+                }
+                if (arg.equalsIgnoreCase("--report") && check(sender, "report")) {
+                    iterator.remove();
+                    flags.add(Flag.REPORT);
                 }
             }
             if ((flags.isEmpty() && worldList.isEmpty()) || flags.contains(Flag.HELP)) {
@@ -290,6 +293,7 @@ public class Cleaner extends JavaPlugin {
                 sender.sendMessage(ChatColor.RED + "No worlds specified. Aborting.");
                 return true;
             }
+            Report report = new Report(this);
             for (World world : worlds) {
                 if (flags.contains(Flag.INFO)) {
                     String line = getEnvironment(world) + ChatColor.WHITE + " - " + ChatColor.GOLD + world.getEntities().size() + ChatColor.WHITE + " entities";
@@ -307,7 +311,7 @@ public class Cleaner extends JavaPlugin {
                         // check if the entity meets the radius requirement
                         if (flags.contains(Flag.RADIUS)) {
                             Location loc = ((Player)sender).getLocation();
-                            if (!(e.getLocation().distance(loc) <= radius)) {
+                            if (!(e.getLocation().distanceSquared(loc) <= radius)) {
                                 continue;
                             }
                         }
@@ -339,6 +343,9 @@ public class Cleaner extends JavaPlugin {
                         if (e instanceof Item) {
                             item++;
                         }
+                        if (flags.contains(Flag.REPORT)) {
+                            report.add(e);
+                        }
                         e.remove();
                         iter.remove();
                         cleaned++;
@@ -360,6 +367,10 @@ public class Cleaner extends JavaPlugin {
                     sender.sendMessage(line);
                 }
                 if (sender instanceof Player) { log(">> " + sender.getName() + ": " + ChatColor.stripColor(line)); }
+            }
+            if (flags.contains(Flag.REPORT)) {
+                report.write();
+                sender.sendMessage("Report written to " + report.getFile());
             }
         }
         return true;
@@ -389,63 +400,40 @@ public class Cleaner extends JavaPlugin {
         if (flags.contains(Flag.FORCE) && !(e instanceof Player)) {
             return true;
         }
-        if (e instanceof Painting && !flags.contains(Flag.PAINTING)) {
-            // painting wasn't specified, so we're ignoring this entity
-            if (!flags.contains(Flag.FORCE)) { return false; }
+        if (e instanceof Painting && flags.contains(Flag.PAINTING)) {
+            // this is a painting, and the painting flag was added
+            return true;
         }
-        if (!(e instanceof Painting) && flags.contains(Flag.PAINTING)) {
-            // this isn't a painting, and painting was specified
-            return false;
+        if (e instanceof Vehicle && flags.contains(Flag.VEHICLE)) {
+            // this is a vehicle, and vehicle flag was explicitly added
+            return true;
         }
-        if (!(e instanceof Monster) && flags.contains(Flag.MONSTER)) {
-            // monster was specified, but this isn't a monster
-            return false;
+        if (e instanceof Monster && flags.contains(Flag.MONSTER)) {
+            // this is a monster, and the monster flag was explicitly added
+            return true;
         }
-        if (!(e instanceof Animals) && flags.contains(Flag.ANIMAL)) {
-            // animal was specified, but this isn't an animal
-            return false;
+        if (e instanceof Animals && flags.contains(Flag.ANIMAL)) {
+            // this is an animal, and the animal flag was explicitly added
+            return true;
         }
-        if (!(e instanceof WaterMob) && flags.contains(Flag.WATERMOB)) {
-            // watermob was specified, but this isn't a watermob
-            return false;
+        if (e instanceof WaterMob && flags.contains(Flag.WATERMOB)) {
+            // this is a water mob, and the water mob flag was explicitly added
+            return true;
         }
-        if (!(e instanceof Vehicle) && flags.contains(Flag.VEHICLE)) {
-            // this isn't a vehicle, and vehicle was specified
-            return false;
+        if (e instanceof Item && e.getTicksLived() > 1200 && flags.contains(Flag.ITEM)) {
+            // this is an item, it's older than 1 minute, and item was specified
+            return true;
         }
-        if (!(e instanceof Item) && flags.contains(Flag.ITEM)) {
-            // this isn't an item, and item was specified
-            return false;
+        if (e instanceof Golem && flags.contains(Flag.GOLEM)) {
+            return true;
         }
-        if (e instanceof Item && e.getTicksLived() < 1200 && flags.contains(Flag.ITEM)) {
-            // this is an item, it's younger than 1 minute, and item was specified
-            return false;
+        if (e instanceof Villager && flags.contains(Flag.VILLAGER)) {
+            return true;
         }
-        if (e instanceof Golem) {
-            if (e instanceof IronGolem && ((IronGolem)e).isPlayerCreated() && !flags.contains(Flag.GOLEM)) {
-                if (!flags.contains(Flag.FORCE)) { return false; }
-            }
+        if (e instanceof Tameable && ((Tameable)e).isTamed() && flags.contains(Flag.PET)) {
+            return true;
         }
-        if (e instanceof Villager && !flags.contains(Flag.VILLAGER)) {
-            if (!flags.contains(Flag.FORCE)) { return false; }
-        }
-        if (e instanceof Player) {
-            // ignore players!
-            debug("Encountered player while cleaning... " + ((Player)e).getName());
-            return false;
-        }
-        if (e instanceof Tameable) {
-            // this is a possible pet.. let's see
-            if (((Tameable)e).isTamed() && !flags.contains(Flag.PET)) {
-                // it's a pet! let's ignore it if we don't have force specified
-                if (!flags.contains(Flag.FORCE)) { return false; }
-            }
-        }
-        if (e.getPassenger() != null && e.getPassenger() instanceof Player && !flags.contains(Flag.FORCE)) {
-            // this entity has a passenger, and we haven't specified force
-            return false;
-        }
-        return true;
+        return false;
     }
 
     public String getEnvironment(World world) {
@@ -459,7 +447,7 @@ public class Cleaner extends JavaPlugin {
 
     public void showHelp(CommandSender sender, String f) {
         Flag flag = Flag.get(f);
-        if (!f.equalsIgnoreCase("help") && !check(sender, flag.name())) {
+        if (f != null && !f.equalsIgnoreCase("help") && !check(sender, flag.name())) {
             sender.sendMessage(ChatColor.RED + "You don't have permission to use that flag.");
         }
         sender.sendMessage(ChatColor.GREEN + "=== " + ChatColor.GOLD + "Help: " + ChatColor.AQUA + flag.name() + ChatColor.GREEN + " ===");

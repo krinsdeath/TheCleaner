@@ -20,7 +20,8 @@ public enum Flag {
     PET("Cleans up pets.", "--pet"),
     VILLAGER("Cleans up villagers.", "--villager"),
     ITEM("Cleans up items older than 60 seconds.", "--item"),
-    RADIUS("Cleans entities in a radius around the player.", "--radius=[num]");
+    RADIUS("Cleans entities in a radius around the player.", "--radius=[num]"),
+    REPORT("Creates a detailed report of all entities cleaned.", "--report");
     private String desc;
     private String usage;
 
