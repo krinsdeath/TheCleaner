@@ -90,6 +90,7 @@ public class WorldListener implements Listener {
             return;
         }
         Set<Flag> flags = EnumSet.noneOf(Flag.class);
+        flags.add(Flag.ITEM);
         if (event.getLocation().getWorld().getEntities().size() >= plugin.clean_on_overload_total && plugin.clean_on_overload) {
             event.setCancelled(true);
             overloaded = true;
