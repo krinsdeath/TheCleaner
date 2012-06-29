@@ -1,6 +1,7 @@
 package net.krinsoft.thecleaner;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Explosive;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -99,7 +100,7 @@ public class WorldListener implements Listener {
             int cleaned = 0;
             while (iterator.hasNext()) {
                 Entity e = iterator.next();
-                if (plugin.cleanerCheck(e, flags)) {
+                if (plugin.cleanerCheck(e, flags) || e instanceof Explosive) {
                     iterator.remove();
                     e.remove();
                     cleaned++;
