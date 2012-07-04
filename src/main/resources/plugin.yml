@@ -64,6 +64,9 @@ permissions:
   thecleaner.villager:
     description: Allows the user to specify that villagers should be cleaned.
     default: op
+  thecleaner.dragon:
+    description: Allows the user to clear out the EnderDragon.
+    default: op
   thecleaner.item:
     description: Allows the user to specify that ONLY items are cleaned.
     default: op
@@ -101,6 +104,7 @@ permissions:
       thecleaner.golem: true
       thecleaner.pet: true
       thecleaner.villager: true
+      thecleaner.dragon: true
       thecleaner.item: true
       thecleaner.radius: true
       thecleaner.projectile: true

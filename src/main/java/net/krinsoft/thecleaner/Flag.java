@@ -19,6 +19,7 @@ public enum Flag {
     GOLEM("Cleans up golems.", "--golem"),
     PET("Cleans up pets.", "--pet"),
     VILLAGER("Cleans up villagers.", "--villager"),
+    DRAGON("Kills the Ender Dragon.", "--dragon"),
     ITEM("Cleans up items older than 60 seconds.", "--item"),
     RADIUS("Cleans entities in a radius around the player.", "--radius=[num]"),
     EXPLOSIVE("Cleans up left-over explosives.", "--explosive"),

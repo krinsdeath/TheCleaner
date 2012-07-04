@@ -15,6 +15,7 @@ import java.util.Map;
 public class Report {
     private Map<String, Integer> counts = new HashMap<String, Integer>();
     private Cleaner plugin;
+    private File file;
 
     public Report(Cleaner instance) {
         plugin = instance;
@@ -40,9 +41,11 @@ public class Report {
      */
     public void write() {
         try {
-            File file = new File(plugin.getDataFolder(), "report.txt");
-            if (file.exists()) {
-                file.delete();
+            int i = 1;
+            file = new File(plugin.getDataFolder(), "report.txt");
+            while (file.exists()) {
+                file = new File(plugin.getDataFolder(), "report"+i+".txt");
+                i++;
             }
             OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file));
             out.write("# The following is a report of entities cleaned.\n");
@@ -61,7 +64,7 @@ public class Report {
     }
 
     public String getFile() {
-        return plugin.getDataFolder().toString() + "/report.txt";
+        return file.toString();
     }
 
 }

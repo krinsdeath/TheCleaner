@@ -154,69 +154,90 @@ public class Cleaner extends JavaPlugin {
                 }
                 if (arg.equals("--all") && check(sender, "all")) {
                     iterator.remove();
-                    flags.add(Flag.ALL); continue;
+                    flags.add(Flag.ALL);
+                    continue;
                 }
                 if (arg.equals("--debug") && check(sender, "debug")) {
                     iterator.remove();
                     flags.clear();
-                    flags.add(Flag.DEBUG); continue;
+                    flags.add(Flag.DEBUG);
+                    continue;
                 }
                 if (arg.equals("--broadcast") && check(sender, "broadcast")) {
                     iterator.remove();
-                    flags.add(Flag.BROADCAST); continue;
+                    flags.add(Flag.BROADCAST);
+                    continue;
                 }
                 if (arg.equals("--info") && check(sender, "info")) {
                     iterator.remove();
                     flags.clear();
-                    flags.add(Flag.INFO); continue;
+                    flags.add(Flag.INFO);
+                    continue;
                 }
                 if (arg.equals("--verbose") && check(sender, "verbose")) {
                     iterator.remove();
-                    flags.add(Flag.VERBOSE); continue;
+                    flags.add(Flag.VERBOSE);
+                    continue;
                 }
                 if (arg.equals("--force") && check(sender, "force")) {
                     iterator.remove();
-                    flags.add(Flag.FORCE); continue;
+                    flags.add(Flag.FORCE);
+                    continue;
                 }
                 if (arg.equals("--all") && check(sender, "all")) {
                     iterator.remove();
-                    flags.add(Flag.ALL); continue;
+                    flags.add(Flag.ALL);
+                    continue;
                 }
                 if (arg.equals("--vehicle") && check(sender, "vehicle")) {
                     iterator.remove();
-                    flags.add(Flag.VEHICLE); continue;
+                    flags.add(Flag.VEHICLE);
+                    continue;
                 }
                 if (arg.equals("--painting") && check(sender, "painting")) {
                     iterator.remove();
-                    flags.add(Flag.PAINTING); continue;
+                    flags.add(Flag.PAINTING);
+                    continue;
                 }
                 if (arg.equals("--monster") && check(sender, "monster")) {
                     iterator.remove();
-                    flags.add(Flag.MONSTER); continue;
+                    flags.add(Flag.MONSTER);
+                    continue;
                 }
                 if (arg.equals("--animal") && check(sender, "animal")) {
                     iterator.remove();
-                    flags.add(Flag.ANIMAL); continue;
+                    flags.add(Flag.ANIMAL);
+                    continue;
                 }
                 if (arg.equals("--watermob") && check(sender, "watermob")) {
                     iterator.remove();
-                    flags.add(Flag.WATERMOB); continue;
+                    flags.add(Flag.WATERMOB);
+                    continue;
                 }
                 if (arg.equals("--golem") && check(sender, "golem")) {
                     iterator.remove();
-                    flags.add(Flag.GOLEM); continue;
+                    flags.add(Flag.GOLEM);
+                    continue;
                 }
                 if (arg.equals("--pet") && check(sender, "pet")) {
                     iterator.remove();
-                    flags.add(Flag.PET); continue;
+                    flags.add(Flag.PET);
+                    continue;
                 }
                 if (arg.equals("--villager") && check(sender, "villager")) {
                     iterator.remove();
-                    flags.add(Flag.VILLAGER); continue;
+                    flags.add(Flag.VILLAGER);
+                    continue;
+                }
+                if (arg.equalsIgnoreCase("--dragon") && check(sender, "dragon")) {
+                    iterator.remove();
+                    flags.add(Flag.DRAGON);
+                    continue;
                 }
                 if (arg.equals("--item") && check(sender, "item")) {
                     iterator.remove();
                     flags.add(Flag.ITEM);
+                    continue;
                 }
                 if (arg.startsWith("--radius") && check(sender, "radius")) {
                     if (sender instanceof Player) {
@@ -232,14 +253,17 @@ public class Cleaner extends JavaPlugin {
                         sender.sendMessage(ChatColor.RED + "You have to be a player to specify a radius.");
                     }
                     iterator.remove();
+                    continue;
                 }
                 if (arg.equalsIgnoreCase("--projectile") && check(sender, "projectile")) {
                     iterator.remove();
                     flags.add(Flag.PROJECTILE);
+                    continue;
                 }
                 if (arg.equalsIgnoreCase("--explosive") && check(sender, "explosive")) {
                     iterator.remove();
                     flags.add(Flag.EXPLOSIVE);
+                    continue;
                 }
                 if (arg.equalsIgnoreCase("--report") && check(sender, "report")) {
                     iterator.remove();
@@ -417,6 +441,9 @@ public class Cleaner extends JavaPlugin {
             return true;
         }
         if (e instanceof Monster && flags.contains(Flag.MONSTER)) {
+            if ((e instanceof EnderDragon || e instanceof EnderDragonPart) && !flags.contains(Flag.DRAGON)) {
+                return false;
+            }
             // this is a monster, and the monster flag was explicitly added
             return true;
         }
@@ -438,10 +465,13 @@ public class Cleaner extends JavaPlugin {
         if (e instanceof Golem && flags.contains(Flag.GOLEM)) {
             return true;
         }
+        if (e instanceof Tameable && ((Tameable)e).isTamed() && flags.contains(Flag.PET)) {
+            return true;
+        }
         if (e instanceof Villager && flags.contains(Flag.VILLAGER)) {
             return true;
         }
-        if (e instanceof Tameable && ((Tameable)e).isTamed() && flags.contains(Flag.PET)) {
+        if ((e instanceof EnderDragon || e instanceof EnderDragonPart) && flags.contains(Flag.DRAGON)) {
             return true;
         }
         if (e instanceof Explosive && flags.contains(Flag.EXPLOSIVE)) {
