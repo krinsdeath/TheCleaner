@@ -123,6 +123,7 @@ public class Cleaner extends JavaPlugin {
             } catch (RuntimeException e) {
                 debug(e.getLocalizedMessage());
             }
+            return true;
         }
         if (cmd.getName().equals("cleanup")) {
             if (args.length == 0) {
@@ -404,8 +405,9 @@ public class Cleaner extends JavaPlugin {
                 report.write();
                 sender.sendMessage("Report written to " + report.getFile());
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     // logging!
