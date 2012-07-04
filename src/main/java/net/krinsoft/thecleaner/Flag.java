@@ -21,6 +21,8 @@ public enum Flag {
     VILLAGER("Cleans up villagers.", "--villager"),
     ITEM("Cleans up items older than 60 seconds.", "--item"),
     RADIUS("Cleans entities in a radius around the player.", "--radius=[num]"),
+    EXPLOSIVE("Cleans up left-over explosives.", "--explosive"),
+    PROJECTILE("Cleans up orphaned projectiles.", "--projectile"),
     REPORT("Creates a detailed report of all entities cleaned.", "--report");
     private String desc;
     private String usage;

@@ -233,6 +233,14 @@ public class Cleaner extends JavaPlugin {
                     }
                     iterator.remove();
                 }
+                if (arg.equalsIgnoreCase("--projectile") && check(sender, "projectile")) {
+                    iterator.remove();
+                    flags.add(Flag.PROJECTILE);
+                }
+                if (arg.equalsIgnoreCase("--explosive") && check(sender, "explosive")) {
+                    iterator.remove();
+                    flags.add(Flag.EXPLOSIVE);
+                }
                 if (arg.equalsIgnoreCase("--report") && check(sender, "report")) {
                     iterator.remove();
                     flags.add(Flag.REPORT);
@@ -413,6 +421,9 @@ public class Cleaner extends JavaPlugin {
             return true;
         }
         if (e instanceof Animals && flags.contains(Flag.ANIMAL)) {
+            if (e instanceof Tameable && ((Tameable) e).isTamed() && !flags.contains(Flag.PET)) {
+                return false;
+            }
             // this is an animal, and the animal flag was explicitly added
             return true;
         }
@@ -432,6 +443,14 @@ public class Cleaner extends JavaPlugin {
         }
         if (e instanceof Tameable && ((Tameable)e).isTamed() && flags.contains(Flag.PET)) {
             return true;
+        }
+        if (e instanceof Explosive && flags.contains(Flag.EXPLOSIVE)) {
+            return true;
+        }
+        if (e instanceof Projectile && flags.contains(Flag.PROJECTILE)) {
+            if (e.getTicksLived() > 1200 || ((Projectile)e).getShooter() == null) {
+                return true;
+            }
         }
         return false;
     }
