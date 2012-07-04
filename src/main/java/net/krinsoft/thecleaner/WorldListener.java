@@ -26,6 +26,9 @@ public class WorldListener implements Listener {
 
     private boolean overloaded = false;
 
+    private int chunk = 0;
+    private int cleaned = 0;
+
     public WorldListener(Cleaner instance) {
         plugin = instance;
     }
@@ -113,8 +116,8 @@ public class WorldListener implements Listener {
 
     @EventHandler
     void chunkLoad(ChunkLoadEvent event) {
+        chunk++;
         // clean up frozen projectiles
-        int cleaned = 0;
         for (Entity e : event.getChunk().getEntities()) {
             if (e instanceof Projectile && (((Projectile)e).getShooter() == null || e.getVelocity().length() == 0)) {
                 // this projectile's shooter is gone or has no velocity
@@ -127,8 +130,12 @@ public class WorldListener implements Listener {
                 cleaned++;
             }
         }
-        if (cleaned > 0) {
-            plugin.debug("Cleaned " + cleaned + " entities from '" + event.getChunk().getWorld().getName() + "'");
+        if (chunk >= 50) {
+            if (cleaned > 0) {
+                plugin.debug("Cleaned " + cleaned + " entities from " + chunk + " chunks.");
+            }
+            cleaned = 0;
+            chunk = 0;
         }
     }
 
