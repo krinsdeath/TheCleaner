@@ -6,10 +6,31 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.*;
+import org.bukkit.command.RemoteConsoleCommandSender;
+import org.bukkit.entity.Animals;
+import org.bukkit.entity.EnderDragon;
+import org.bukkit.entity.EnderDragonPart;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Explosive;
+import org.bukkit.entity.Golem;
+import org.bukkit.entity.IronGolem;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Vehicle;
+import org.bukkit.entity.Villager;
+import org.bukkit.entity.WaterMob;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author krinsdeath
@@ -73,7 +94,7 @@ public class Cleaner extends JavaPlugin {
         clean_on_overload = getConfig().getBoolean("overload.clean", true);
         clean_on_overload_total = getConfig().getInt("overload.total", 5000);
         clean_on_load = getConfig().getBoolean("startup.clean", true);
-        clean_on_load_flags = getConfig().getString("startup.flags", "--monster --item");
+        clean_on_load_flags = getConfig().getString("startup.flags", "--monster --item --explosive --projectile");
         if (getConfig().get("limits.enabled") != null) {
             getConfig().set("limits", null);
         }
@@ -521,7 +542,7 @@ public class Cleaner extends JavaPlugin {
     }
 
     public boolean check(CommandSender sender, String flag, boolean silent) {
-        return sender instanceof ConsoleCommandSender || sender.hasPermission("thecleaner." + flag);
+        return sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender || sender.hasPermission("thecleaner." + flag);
     }
 
 }
