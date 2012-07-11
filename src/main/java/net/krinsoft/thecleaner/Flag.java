@@ -19,6 +19,7 @@ public enum Flag {
     GOLEM("Cleans up golems.", "--golem"),
     PET("Cleans up pets.", "--pet"),
     VILLAGER("Cleans up villagers.", "--villager"),
+    NPC("Cleans up NPCS (e.g. from Citizens).", "--npc"),
     DRAGON("Kills the Ender Dragon.", "--dragon"),
     ITEM("Cleans up items older than 60 seconds.", "--item"),
     RADIUS("Cleans entities in a radius around the player.", "--radius=[num]"),
@@ -41,7 +42,7 @@ public enum Flag {
         return this.usage;
     }
 
-    public static Flag get(String flag) {
+    public static Flag forName(String flag) {
         for (Flag f : values()) {
             if (f.name().equalsIgnoreCase(flag)) {
                 return f;

@@ -16,6 +16,7 @@ import org.bukkit.entity.Golem;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Monster;
+import org.bukkit.entity.NPC;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -249,6 +250,11 @@ public class Cleaner extends JavaPlugin {
                 if (arg.equals("--villager") && check(sender, "villager")) {
                     iterator.remove();
                     flags.add(Flag.VILLAGER);
+                    continue;
+                }
+                if (arg.equals("--npc") && check(sender, "npc")) {
+                    iterator.remove();
+                    flags.add(Flag.NPC);
                     continue;
                 }
                 if (arg.equalsIgnoreCase("--dragon") && check(sender, "dragon")) {
@@ -491,8 +497,11 @@ public class Cleaner extends JavaPlugin {
         if (e instanceof Tameable && ((Tameable)e).isTamed() && flags.contains(Flag.PET)) {
             return true;
         }
-        if (e instanceof Villager && flags.contains(Flag.VILLAGER)) {
-            return true;
+        if (e instanceof NPC) {
+            if (e instanceof Villager) {
+                return flags.contains(Flag.VILLAGER);
+            }
+            return flags.contains(Flag.NPC);
         }
         if ((e instanceof EnderDragon || e instanceof EnderDragonPart) && flags.contains(Flag.DRAGON)) {
             return true;
@@ -518,7 +527,7 @@ public class Cleaner extends JavaPlugin {
     }
 
     public void showHelp(CommandSender sender, String f) {
-        Flag flag = Flag.get(f);
+        Flag flag = Flag.forName(f);
         if (f != null && !f.equalsIgnoreCase("help") && !check(sender, flag.name())) {
             sender.sendMessage(ChatColor.RED + "You don't have permission to use that flag.");
         }
