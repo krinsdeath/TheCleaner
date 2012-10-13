@@ -1,5 +1,6 @@
 package net.krinsoft.thecleaner;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Explosive;
 import org.bukkit.entity.Item;
@@ -25,6 +26,7 @@ public class WorldListener implements Listener {
     private Cleaner plugin;
 
     private boolean overloaded = false;
+    private Location explosion_location = null;
 
     private int chunk = 0;
     private int cleaned = 0;
@@ -98,6 +100,7 @@ public class WorldListener implements Listener {
         if (event.getLocation().getWorld().getEntities().size() >= plugin.clean_on_overload_total && plugin.clean_on_overload) {
             event.setCancelled(true);
             overloaded = true;
+            explosion_location = event.getLocation();
             plugin.log("Detected massive explosion event. Automatically cleaning entities to protect world integrity!");
             Iterator<Entity> iterator = event.getLocation().getWorld().getEntities().iterator();
             int cleaned = 0;
@@ -109,8 +112,9 @@ public class WorldListener implements Listener {
                     cleaned++;
                 }
             }
-            plugin.log("Cleaned " + cleaned + " entities from " + event.getLocation().getWorld().getName());
+            plugin.log("Cleaned " + cleaned + " entities from " + event.getLocation().getWorld().getName() + " (Started at: {x=" + (int) explosion_location.getX() + ",y=" + (int) explosion_location.getY() + ",z=" + (int) explosion_location.getZ() + "})");
             overloaded = false;
+            explosion_location = null;
         }
     }
 
