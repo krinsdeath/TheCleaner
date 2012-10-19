@@ -126,13 +126,16 @@ public class WorldListener implements Listener {
         // clean up frozen projectiles
         for (Entity e : event.getChunk().getEntities()) {
             if (plugin.chunk_recovery_mode && !(e instanceof Player)) {
+                // chunk recovery mode is on, so we're going to clean everything that isn't a player.
                 e.remove();
                 cleaned++;
+                continue;
             }
             if (e instanceof Projectile && (((Projectile)e).getShooter() == null || e.getVelocity().length() == 0)) {
                 // this projectile's shooter is gone or has no velocity
                 e.remove();
                 cleaned++;
+                continue;
             }
             if (e instanceof Item && e.getTicksLived() > 1200) {
                 // this item has been on the ground for more than 60 seconds

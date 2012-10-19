@@ -120,6 +120,7 @@ public class Cleaner extends JavaPlugin {
         // cleanup at world loading
         getConfig().set("startup.clean", clean_on_load);
         getConfig().set("startup.flags", clean_on_load_flags);
+        getConfig().set("startup.chunk_recovery", chunk_recovery_mode);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
