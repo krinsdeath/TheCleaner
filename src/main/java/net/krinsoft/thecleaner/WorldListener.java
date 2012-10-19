@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Explosive;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -76,6 +77,7 @@ public class WorldListener implements Listener {
                 flags.add(Flag.ITEM);
             }
         }
+        plugin.log("Cleaning entities with the following flags: " + flags.toString());
         Iterator<Entity> iterator = event.getWorld().getEntities().iterator();
         int cleaned = 0;
         while (iterator.hasNext()) {
@@ -123,6 +125,10 @@ public class WorldListener implements Listener {
         chunk++;
         // clean up frozen projectiles
         for (Entity e : event.getChunk().getEntities()) {
+            if (plugin.chunk_recovery_mode && !(e instanceof Player)) {
+                e.remove();
+                cleaned++;
+            }
             if (e instanceof Projectile && (((Projectile)e).getShooter() == null || e.getVelocity().length() == 0)) {
                 // this projectile's shooter is gone or has no velocity
                 e.remove();

@@ -89,6 +89,7 @@ public class Cleaner extends JavaPlugin {
     public int clean_on_overload_total = 5000;
     public boolean clean_on_load = true;
     public String clean_on_load_flags = "";
+    public boolean chunk_recovery_mode = false;
 
     public void onEnable() {
         debug = getConfig().getBoolean("debug", false);
@@ -96,6 +97,7 @@ public class Cleaner extends JavaPlugin {
         clean_on_overload_total = getConfig().getInt("overload.total", 5000);
         clean_on_load = getConfig().getBoolean("startup.clean", true);
         clean_on_load_flags = getConfig().getString("startup.flags", "--monster --item --explosive --projectile");
+        chunk_recovery_mode = getConfig().getBoolean("startup.chunk_recovery", false);
         if (getConfig().get("limits.enabled") != null) {
             getConfig().set("limits", null);
         }
