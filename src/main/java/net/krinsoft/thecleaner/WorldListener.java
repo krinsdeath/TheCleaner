@@ -28,6 +28,7 @@ public class WorldListener implements Listener {
 
     private boolean overloaded = false;
     private Location explosion_location = null;
+    private String explosion_cause = null;
 
     private int chunk = 0;
     private int cleaned = 0;
@@ -103,6 +104,7 @@ public class WorldListener implements Listener {
             event.setCancelled(true);
             overloaded = true;
             explosion_location = event.getLocation();
+            explosion_cause = event.getEntity().toString();
             plugin.log("Detected massive explosion event. Automatically cleaning entities to protect world integrity!");
             Iterator<Entity> iterator = event.getLocation().getWorld().getEntities().iterator();
             int cleaned = 0;
@@ -114,7 +116,7 @@ public class WorldListener implements Listener {
                     cleaned++;
                 }
             }
-            plugin.log("Cleaned " + cleaned + " entities from " + event.getLocation().getWorld().getName() + " (Started at: {x=" + (int) explosion_location.getX() + ",y=" + (int) explosion_location.getY() + ",z=" + (int) explosion_location.getZ() + "})");
+            plugin.log("Cleaned " + cleaned + " entities from " + event.getLocation().getWorld().getName() + " (Started at {x=" + (int) explosion_location.getX() + ",y=" + (int) explosion_location.getY() + ",z=" + (int) explosion_location.getZ() + "} by " + explosion_cause + ")");
             overloaded = false;
             explosion_location = null;
         }
