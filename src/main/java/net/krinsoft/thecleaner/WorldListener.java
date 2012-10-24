@@ -119,6 +119,7 @@ public class WorldListener implements Listener {
             plugin.log("Cleaned " + cleaned + " entities from " + event.getLocation().getWorld().getName() + " (Started at {x=" + (int) explosion_location.getX() + ",y=" + (int) explosion_location.getY() + ",z=" + (int) explosion_location.getZ() + "} by " + explosion_cause + ")");
             overloaded = false;
             explosion_location = null;
+            explosion_cause = null;
         }
     }
 
