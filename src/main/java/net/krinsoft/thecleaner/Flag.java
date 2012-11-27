@@ -1,7 +1,6 @@
 package net.krinsoft.thecleaner;
 
 import java.util.EnumSet;
-import java.util.Set;
 
 /**
  * @author krinsdeath
@@ -27,6 +26,7 @@ public enum Flag {
     NPC("Cleans up NPCS (e.g. from Citizens).", "--npc", false),
     DRAGON("Kills the Ender Dragon.", "--dragon", false),
     ITEM("Cleans up items older than 60 seconds.", "--item", false),
+    FRAME("Cleans up and destroys item frames.", "--frame", false),
     RADIUS("Cleans entities in a radius around the player.", "--radius=[num]", true),
     EXPLOSIVE("Cleans up left-over explosives.", "--explosive", false),
     PROJECTILE("Cleans up orphaned projectiles.", "--projectile", false),

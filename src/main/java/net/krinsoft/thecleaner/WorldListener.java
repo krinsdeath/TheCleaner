@@ -52,30 +52,42 @@ public class WorldListener implements Listener {
         for (String flag : flagstring.split(" ")) {
             if (flag.equals("--force")) {
                 flags.add(Flag.FORCE);
+                continue;
             }
             if (flag.equals("--vehicle")) {
                 flags.add(Flag.VEHICLE);
+                continue;
             }
             if (flag.equals("--painting")) {
                 flags.add(Flag.PAINTING);
+                continue;
             }
             if (flag.equals("--monster")) {
                 flags.add(Flag.MONSTER);
+                continue;
             }
             if (flag.equals("--animal")) {
                 flags.add(Flag.ANIMAL);
+                continue;
             }
             if (flag.equals("--watermob")) {
                 flags.add(Flag.WATERMOB);
+                continue;
             }
             if (flag.equals("--golem")) {
                 flags.add(Flag.GOLEM);
+                continue;
             }
             if (flag.equals("--villager")) {
                 flags.add(Flag.VILLAGER);
+                continue;
             }
             if (flag.equals("--item")) {
                 flags.add(Flag.ITEM);
+                continue;
+            }
+            if (flag.equals("--frame")) {
+                flags.add(Flag.FRAME);
             }
         }
         plugin.log("Cleaning entities with the following flags: " + flags.toString());

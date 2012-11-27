@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Animals;
+import org.bukkit.entity.Creature;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
@@ -15,6 +16,8 @@ import org.bukkit.entity.Explosive;
 import org.bukkit.entity.Golem;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.NPC;
 import org.bukkit.entity.Painting;
@@ -270,6 +273,11 @@ public class Cleaner extends JavaPlugin {
                     flags.add(Flag.ITEM);
                     continue;
                 }
+                if (arg.equals("--frame") && check(sender, "frame")) {
+                    iterator.remove();
+                    flags.add(Flag.FRAME);
+                    continue;
+                }
                 if (arg.startsWith("--radius") && check(sender, "radius")) {
                     if (sender instanceof Player) {
                         try {
@@ -464,57 +472,55 @@ public class Cleaner extends JavaPlugin {
         if (flags.contains(Flag.FORCE) && !(e instanceof Player)) {
             return true;
         }
-        if (e instanceof Painting && flags.contains(Flag.PAINTING)) {
-            // this is a painting, and the painting flag was added
-            return true;
-        }
-        if (e instanceof Vehicle && flags.contains(Flag.VEHICLE)) {
-            // this is a vehicle, and vehicle flag was explicitly added
-            return true;
-        }
-        if (e instanceof Monster && flags.contains(Flag.MONSTER)) {
-            if ((e instanceof EnderDragon || e instanceof EnderDragonPart) && !flags.contains(Flag.DRAGON)) {
-                return false;
+        if (e instanceof LivingEntity) {
+            if (e instanceof Monster) {
+                if ((e instanceof EnderDragon || e instanceof EnderDragonPart)) {
+                    return flags.contains(Flag.DRAGON);
+                }
+                // this is a monster, and the monster flag was explicitly added
+                return flags.contains(Flag.MONSTER);
             }
-            // this is a monster, and the monster flag was explicitly added
-            return true;
-        }
-        if (e instanceof Animals && flags.contains(Flag.ANIMAL)) {
-            if (e instanceof Tameable && ((Tameable) e).isTamed() && !flags.contains(Flag.PET)) {
-                return false;
+            if (e instanceof Animals) {
+                if (e instanceof Tameable && ((Tameable) e).isTamed()) {
+                    return flags.contains(Flag.PET);
+                }
+                return flags.contains(Flag.ANIMAL);
             }
-            // this is an animal, and the animal flag was explicitly added
-            return true;
-        }
-        if (e instanceof WaterMob && flags.contains(Flag.WATERMOB)) {
-            // this is a water mob, and the water mob flag was explicitly added
-            return true;
-        }
-        if (e instanceof Item && e.getTicksLived() > 1200 && flags.contains(Flag.ITEM)) {
-            // this is an item, it's older than 1 minute, and item was specified
-            return true;
-        }
-        if (e instanceof Golem && flags.contains(Flag.GOLEM)) {
-            return true;
-        }
-        if (e instanceof Tameable && ((Tameable)e).isTamed() && flags.contains(Flag.PET)) {
-            return true;
-        }
-        if (e instanceof NPC) {
-            if (e instanceof Villager) {
-                return flags.contains(Flag.VILLAGER);
+            if (e instanceof WaterMob) {
+                return flags.contains(Flag.WATERMOB);
             }
-            return flags.contains(Flag.NPC);
-        }
-        if ((e instanceof EnderDragon || e instanceof EnderDragonPart) && flags.contains(Flag.DRAGON)) {
-            return true;
-        }
-        if (e instanceof Explosive && flags.contains(Flag.EXPLOSIVE)) {
-            return true;
-        }
-        if (e instanceof Projectile && flags.contains(Flag.PROJECTILE)) {
-            if (e.getTicksLived() > 1200 || ((Projectile)e).getShooter() == null) {
-                return true;
+            if (e instanceof Golem) {
+                return flags.contains(Flag.GOLEM);
+            }
+            if (e instanceof NPC) {
+                if (e instanceof Villager) {
+                    return flags.contains(Flag.VILLAGER);
+                }
+                return flags.contains(Flag.NPC);
+            }
+        } else {
+            if (e instanceof Painting) {
+                // this is a painting, and the painting flag was added
+                return flags.contains(Flag.PAINTING);
+            }
+            if (e instanceof Vehicle) {
+                // this is a vehicle, and vehicle flag was explicitly added
+                return flags.contains(Flag.VEHICLE);
+            }
+            if (e instanceof Item && e.getTicksLived() > 1200) {
+                // this is an item, it's older than 1 minute, and item was specified
+                return flags.contains(Flag.ITEM);
+            }
+            if (e instanceof ItemFrame) {
+                return flags.contains(Flag.FRAME);
+            }
+            if (e instanceof Explosive) {
+                return flags.contains(Flag.EXPLOSIVE);
+            }
+            if (e instanceof Projectile) {
+                if (e.getTicksLived() > 1200 || ((Projectile)e).getShooter() == null) {
+                    return flags.contains(Flag.PROJECTILE);
+                }
             }
         }
         return false;

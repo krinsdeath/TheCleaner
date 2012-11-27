@@ -9,21 +9,17 @@ commands:
   cleanup:
     aliases: [clean]
     description: Clean up the entities in your server's worlds
-    usage: |
-      /<command> --debug        - Toggle debugging
-      /<command> --all          - Clean the entities on all worlds
-      /<command> [world]        - Clean the entities on the specified world
-      /<command> --info         - Get info about the currently loaded worlds
+    usage: /<command>
   sysstat:
     aliases: [system, stat]
-    description: Show pertinent information about the JVM
+    description: Show pertinent information about the JVM and host OS
     usage: /<command>
 permissions:
   thecleaner.system:
-    description: Allows the user to see system information.
+    description: Allows the user to see system information via /sysstat.
     default: op
   thecleaner.all:
-    description: Allows the user to clean all the entities from all worlds.
+    description: Allows the user to flag all worlds for cleaning.
     default: op
   thecleaner.debug:
     description: Allows the user to toggle debug mode.
@@ -38,46 +34,49 @@ permissions:
     description: Adds more detailed messages to the cleaning process.
     default: op
   thecleaner.force:
-    description: Allows the user to force cleanup of entities which otherwise wouldn't be cleaned.
+    description: Allows the user to flag all entities for cleaning. Excludes players.
     default: op
   thecleaner.vehicle:
-    description: Allows the user to specify that ONLY vehicles are cleaned.
+    description: Allows the user to flag vehicles for cleaning.
     default: op
   thecleaner.painting:
-    description: Allows the user to specify that ONLY paintings are cleaned.
+    description: Allows the user to flag paintings for cleaning.
     default: op
   thecleaner.monster:
-    description: Allows the user to specify that ONLY monsters are cleaned.
+    description: Allows the user to flag monsters for cleaning. Excludes bosses.
     default: op
   thecleaner.animal:
-    description: Allows the user to specify that ONLY animals are cleaned.
+    description: Allows the user to flag animals for cleaning.
     default: op
   thecleaner.watermob:
-    description: Allows the user to specify that ONLY watermobs are cleaned.
+    description: Allows the user to flag water mobs for cleaning.
     default: op
   thecleaner.golem:
-    description: Allows the user to specify that golems should be cleaned.
+    description: Allows the user to flag golems for cleaning.
     default: op
   thecleaner.pet:
-    description: Allows the user to specify that pets should be cleaned.
+    description: Allows the user to flag pets for cleaning.
     default: op
   thecleaner.villager:
-    description: Allows the user to specify that villagers should be cleaned.
+    description: Allows the user to flag villagers for cleaning.
     default: op
   thecleaner.dragon:
-    description: Allows the user to clear out the EnderDragon.
+    description: Allows the user to flag the ender dragon for cleaning.
     default: op
   thecleaner.item:
-    description: Allows the user to specify that ONLY items are cleaned.
+    description: Allows the user to flag items older than 60 seconds for cleaning.
+    default: op
+  thecleaner.frame:
+    description: Allows the user to flag item frames for cleaning.
     default: op
   thecleaner.radius:
     description: Allows the user to specify that only entities within the given radius are cleaned.
     default: op
   thecleaner.projectile:
-    description: Allows the user to specify that orphaned or old projectiles are cleaned out.
+    description: Allows the user to flag orphaned and glitched projectiles for cleaning.
     default: op
   thecleaner.explosive:
-    description: Allows the user to specify that explosives are cleaned out.
+    description: Allows the user to flag explosives for cleaning.
     default: op
   thecleaner.report:
     description: Allows a user to print a detailed report of the cleaning.
@@ -106,6 +105,7 @@ permissions:
       thecleaner.villager: true
       thecleaner.dragon: true
       thecleaner.item: true
+      thecleaner.frame: true
       thecleaner.radius: true
       thecleaner.projectile: true
       thecleaner.explosive: true
