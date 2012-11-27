@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Animals;
-import org.bukkit.entity.Creature;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
@@ -68,11 +67,11 @@ public class Cleaner extends JavaPlugin {
                     sender.sendMessage("Server clock is running a bit slow. Consider optimizing plugin settings.");
                 }
                 String performance;
-                if (runtime <= 1000) {
+                if (runtime < 1020) {
                     performance = ChatColor.GREEN + "Excellent";
-                } else if (runtime > 1000 && runtime <= 1200) {
+                } else if (runtime >= 1020 && runtime < 1200) {
                     performance = ChatColor.GOLD + "Average";
-                } else if (runtime > 1200 && runtime <= 1500) {
+                } else if (runtime >= 1200 && runtime < 1500) {
                     performance = ChatColor.RED + "Poor";
                 } else {
                     performance = ChatColor.GRAY + "Terrible";
@@ -132,25 +131,14 @@ public class Cleaner extends JavaPlugin {
                 sender.sendMessage(ChatColor.RED + "You can't use this command.");
                 return true;
             }
-            Runtime runtime = Runtime.getRuntime();
-            long maxMemory  = runtime.maxMemory();
-            long allocated  = runtime.totalMemory();
-            long free       = runtime.freeMemory();
-            Clock clock = new Clock(sender);
             if (args.length > 0 && (args[0].equalsIgnoreCase("--verbose") || args[0].equalsIgnoreCase("-v"))) {
                 String os = System.getProperty("os.name") + " (" + System.getProperty("os.version") + ") - " + System.getProperty("os.arch");
                 String version = System.getProperty("java.vendor") + " " + System.getProperty("java.version");
                 sender.sendMessage("OS: " + os);
                 sender.sendMessage("Java Version: " + version);
             }
-            sender.sendMessage("Maximum memory: " + (maxMemory / 1024L / 1024L) + "MB");
-            sender.sendMessage("Allocated (in use): " + (allocated / 1024L / 1024L) + "MB");
-            sender.sendMessage("Free (available): " + (free / 1024L / 1024L) + "MB");
-            try {
-                clock.ID = getServer().getScheduler().scheduleSyncRepeatingTask(this, clock, 0L, 1L);
-            } catch (RuntimeException e) {
-                debug(e.getLocalizedMessage());
-            }
+            showMemory(sender);
+            showTicks(sender);
             return true;
         }
         if (cmd.getName().equals("cleanup")) {
@@ -191,6 +179,13 @@ public class Cleaner extends JavaPlugin {
                     flags.clear();
                     flags.add(Flag.DEBUG);
                     continue;
+                }
+                if (arg.equals("--vitals") && check(sender, "vitals")) {
+                    iterator.remove();
+                    flags.add(Flag.VITALS);
+                    flags.add(Flag.INFO);
+                    flags.add(Flag.ALL);
+                    break;
                 }
                 if (arg.equals("--broadcast") && check(sender, "broadcast")) {
                     iterator.remove();
@@ -443,6 +438,10 @@ public class Cleaner extends JavaPlugin {
                 report.write();
                 sender.sendMessage("Report written to " + report.getFile());
             }
+            if (flags.contains(Flag.VITALS)) {
+                showMemory(sender);
+                showTicks(sender);
+            }
             return true;
         }
         return false;
@@ -556,6 +555,25 @@ public class Cleaner extends JavaPlugin {
             } else {
                 sender.sendMessage("No topics available.");
             }
+        }
+    }
+
+    public void showMemory(CommandSender sender) {
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemory  = runtime.maxMemory();
+        long allocated  = runtime.totalMemory();
+        long free       = runtime.freeMemory();
+        sender.sendMessage("Maximum memory: " + (maxMemory / 1024L / 1024L) + "MB");
+        sender.sendMessage("Allocated (in use): " + (allocated / 1024L / 1024L) + "MB");
+        sender.sendMessage("Free (available): " + (free / 1024L / 1024L) + "MB");
+    }
+
+    public void showTicks(CommandSender sender) {
+        try {
+            Clock clock = new Clock(sender);
+            clock.ID = getServer().getScheduler().scheduleSyncRepeatingTask(this, clock, 1L, 1L);
+        } catch (RuntimeException e) {
+            debug(e.getLocalizedMessage());
         }
     }
 

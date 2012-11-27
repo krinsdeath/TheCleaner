@@ -9,6 +9,7 @@ public enum Flag {
     HELP("Specifies help message for the provided flag.", "--help=[topic]", true),
     ALL("Cleans entities on every world.", "--all", false),
     WORLD("Cleans up entities on the specified world.", "--world=[world name]", true),
+    VITALS("Shows vital server details.", "--vitals", false),
     DEBUG("Enables debug mode.", "--debug", false),
     BROADCAST("Broadcasts that entities are being cleaned.", "--broadcast", false),
     INFO("Outputs information about the loaded worlds.", "--info", false),
