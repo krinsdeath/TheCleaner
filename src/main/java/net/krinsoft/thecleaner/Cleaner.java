@@ -41,8 +41,11 @@ import java.util.Set;
 public class Cleaner extends JavaPlugin {
     private class Clock implements Runnable {
         private int ID = 0;
+        private int iterations = 0;
         private int ticks = 0;
+        private int total = 0;
         private long started;
+        private long runtime;
         private String runner;
 
         public Clock(CommandSender sender) {
@@ -54,33 +57,46 @@ public class Cleaner extends JavaPlugin {
         public void run() {
             ticks++;
             long runtime = System.currentTimeMillis() - started;
-            if (runtime > 1500 || ticks == 20) {
-                CommandSender sender = getServer().getPlayer(runner);
-                if (sender == null) {
-                    sender = getServer().getConsoleSender();
-                }
-                if (ticks <= 10) {
-                    sender.sendMessage("Server clock is almost stopped. Seriously consider removing any CPU intensive plugins.");
-                } else if (ticks > 10 && ticks <= 15) {
-                    sender.sendMessage("Server clock is running slow. Consider removing CPU intensive plugins.");
-                } else if (ticks > 15 && ticks <=  18) {
-                    sender.sendMessage("Server clock is running a bit slow. Consider optimizing plugin settings.");
-                }
-                String performance;
-                if (runtime < 1020) {
-                    performance = ChatColor.GREEN + "Excellent";
-                } else if (runtime >= 1020 && runtime < 1200) {
-                    performance = ChatColor.GOLD + "Average";
-                } else if (runtime >= 1200 && runtime < 1500) {
-                    performance = ChatColor.RED + "Poor";
+            if (runtime > 1000 || ticks == 20) {
+                iterations++;
+                if (iterations == 5) {
+                    CommandSender sender = getServer().getPlayer(runner);
+                    if (sender == null) {
+                        sender = getServer().getConsoleSender();
+                    }
+                    this.total += ticks;
+                    this.runtime += runtime;
+                    int t = this.total / iterations;
+                    long r = this.runtime / iterations;
+                    if (t <= 10) {
+                        sender.sendMessage("Server clock is almost stopped. Seriously consider removing any CPU intensive plugins.");
+                    } else if (t > 10 && t <= 15) {
+                        sender.sendMessage("Server clock is running slow. Consider removing CPU intensive plugins.");
+                    } else if (t > 15 && t <=  18) {
+                        sender.sendMessage("Server clock is running a bit slow. Consider optimizing plugin settings.");
+                    }
+                    String performance;
+                    if (r < 1020) {
+                        performance = ChatColor.GREEN + "Excellent";
+                    } else if (r >= 1020 && r < 1200) {
+                        performance = ChatColor.GOLD + "Average";
+                    } else if (r >= 1200 && r < 1500) {
+                        performance = ChatColor.RED + "Poor";
+                    } else {
+                        performance = ChatColor.GRAY + "Terrible";
+                    }
+                    sender.sendMessage("Server performance: " + performance);
+                    sender.sendMessage("Average ticks: " + t + " (Over an average of " + r + "ms)");
+                    sender.sendMessage("Total ticks: " + this.total + " (Over a total of " + this.runtime + "ms)");
+                    getServer().getScheduler().cancelTask(ID);
+                    if (getServer().getScheduler().isCurrentlyRunning(ID)) {
+                        throw new RuntimeException("Clock time exceeded.");
+                    }
                 } else {
-                    performance = ChatColor.GRAY + "Terrible";
-                }
-                sender.sendMessage("Server performance: " + performance);
-                sender.sendMessage("Expected 20 ticks, got " + ticks + ". (" + runtime + "ms)");
-                getServer().getScheduler().cancelTask(ID);
-                if (getServer().getScheduler().isCurrentlyRunning(ID)) {
-                    throw new RuntimeException("Clock time exceeded.");
+                    this.total += ticks;
+                    this.runtime += runtime;
+                    this.started = System.currentTimeMillis();
+                    this.ticks = 0;
                 }
             }
         }
