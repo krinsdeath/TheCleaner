@@ -1,6 +1,7 @@
 package net.krinsoft.thecleaner;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -108,6 +109,7 @@ public class Cleaner extends JavaPlugin {
     public boolean clean_on_load = true;
     public String clean_on_load_flags = "";
     public boolean chunk_recovery_mode = false;
+    public int chunk_entity_cutoff = 100;
 
     public void onEnable() {
         debug = getConfig().getBoolean("debug", false);
@@ -116,6 +118,7 @@ public class Cleaner extends JavaPlugin {
         clean_on_load = getConfig().getBoolean("startup.clean", true);
         clean_on_load_flags = getConfig().getString("startup.flags", "--monster --item --explosive --projectile");
         chunk_recovery_mode = getConfig().getBoolean("startup.chunk_recovery", false);
+        chunk_entity_cutoff = getConfig().getInt("info.problem_chunk_entity_cutoff", 100);
         if (getConfig().get("limits.enabled") != null) {
             getConfig().set("limits", null);
         }
@@ -210,7 +213,6 @@ public class Cleaner extends JavaPlugin {
                 }
                 if (arg.equals("--info") && check(sender, "info")) {
                     iterator.remove();
-                    flags.clear();
                     flags.add(Flag.INFO);
                     continue;
                 }
@@ -381,6 +383,24 @@ public class Cleaner extends JavaPlugin {
                     String line = getEnvironment(world) + ChatColor.WHITE + " - " + ChatColor.GOLD + world.getEntities().size() + ChatColor.WHITE + " entities";
                     line += ChatColor.WHITE + " in " + ChatColor.GOLD + world.getLoadedChunks().length + ChatColor.WHITE + " chunks.";
                     sender.sendMessage(line);
+                    if (flags.contains(Flag.VERBOSE)) {
+                        StringBuilder chunks = new StringBuilder();
+                        for (Chunk chunk : world.getLoadedChunks()) {
+                            int ents = chunk.getEntities().length;
+                            if (ents > chunk_entity_cutoff) {
+                                if (chunks.length() > 0) {
+                                    chunks.append("\n");
+                                }
+                                chunks.append("Problem Chunk [").append(chunk.getWorld().getName()).append(",").append(chunk.getX()).append(",").append(chunk.getZ()).append("]: ");
+                                chunks.append(ents).append(" entities");
+                            }
+                        }
+                        if (chunks.toString().length() > 0) {
+                            sender.sendMessage(chunks.toString());
+                        } else {
+                            sender.sendMessage("No problem chunks detected.");
+                        }
+                    }
                     continue;
                 }
                 int ents = world.getEntities().size();
