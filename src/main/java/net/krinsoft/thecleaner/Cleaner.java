@@ -142,6 +142,8 @@ public class Cleaner extends JavaPlugin {
         getConfig().set("startup.clean", clean_on_load);
         getConfig().set("startup.flags", clean_on_load_flags);
         getConfig().set("startup.chunk_recovery", chunk_recovery_mode);
+        // info options
+        getConfig().set("info.problem_chunk_entity_cutoff", chunk_entity_cutoff);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
