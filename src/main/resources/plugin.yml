@@ -14,7 +14,17 @@ commands:
     aliases: [system, stat]
     description: Show pertinent information about the JVM and host OS
     usage: /<command>
+  performance:
+    aliases: [perf, perform]
+    description: Checks the performance of the server over the last day.
+    usage: |
+      /<command>                - Check performance over the last day.
+      /<command> [days]         - Check performance over the specified period of days.
+      /<command> -r|--reset     - Reset performance statistics.
 permissions:
+  thecleaner.performance:
+    description: Allows the user to check the server's performance metrics.
+    default: op
   thecleaner.system:
     description: Allows the user to see system information via /sysstat.
     default: op
@@ -88,6 +98,7 @@ permissions:
     description: Sets all Cleaner nodes to true
     default: op
     children:
+      thecleaner.performance: true
       thecleaner.system: true
       thecleaner.all: true
       thecleaner.debug: true

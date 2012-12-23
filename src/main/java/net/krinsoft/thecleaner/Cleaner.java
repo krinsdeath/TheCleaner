@@ -29,6 +29,13 @@ import org.bukkit.entity.Villager;
 import org.bukkit.entity.WaterMob;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -40,6 +47,46 @@ import java.util.Set;
  * @author krinsdeath
  */
 public class Cleaner extends JavaPlugin {
+    private class Monitor implements Runnable {
+        private int ID;
+        private int ticks = 0;
+        private int total = 0;
+        private short iterations = 0;
+        private long started;
+        private long runtime;
+
+        public Monitor() {
+            started = System.currentTimeMillis();
+        }
+
+        @Override
+        public void run() {
+            ticks++;
+            long run = System.currentTimeMillis() - started;
+            if (ticks == 20 || run > 1000) {
+                total += ticks;
+                iterations++;
+                if (iterations == 5) {
+                    long time = System.currentTimeMillis();
+                    int avg = total / 5;
+                    try {
+                        FileWriter out = new FileWriter(new File(getDataFolder(), "performance.txt"), true);
+                        out.write(time + "," + avg + "\n");
+                        out.close();
+                        debug("Performance saved.");
+                    } catch (IOException e) {
+                        debug(e.getLocalizedMessage());
+                    }
+                    getServer().getScheduler().cancelTask(this.ID);
+                } else {
+                    runtime += run;
+                    started = System.currentTimeMillis();
+                    ticks = 0;
+                }
+            }
+        }
+    }
+
     private class Clock implements Runnable {
         private int ID = 0;
         private int iterations = 0;
@@ -111,6 +158,9 @@ public class Cleaner extends JavaPlugin {
     public boolean chunk_recovery_mode = false;
     public int chunk_entity_cutoff = 100;
 
+    public boolean monitor_performance = false;
+    public int monitor_performance_period = 30;
+
     public void onEnable() {
         debug = getConfig().getBoolean("debug", false);
         clean_on_overload = getConfig().getBoolean("overload.clean", true);
@@ -119,6 +169,11 @@ public class Cleaner extends JavaPlugin {
         clean_on_load_flags = getConfig().getString("startup.flags", "--monster --item --explosive --projectile");
         chunk_recovery_mode = getConfig().getBoolean("startup.chunk_recovery", false);
         chunk_entity_cutoff = getConfig().getInt("info.problem_chunk_entity_cutoff", 100);
+        monitor_performance = getConfig().getBoolean("info.monitor_performance", false);
+        monitor_performance_period = getConfig().getInt("info.monitor_performance_period", 30);
+        if (monitor_performance) {
+            scheduleMonitor();
+        }
         if (getConfig().get("limits.enabled") != null) {
             getConfig().set("limits", null);
         }
@@ -134,6 +189,13 @@ public class Cleaner extends JavaPlugin {
     }
 
     private void dumpConfig() {
+        getConfig().options().header("Debug turns extra log messages on for finding the location and cause of bugs.\n" +
+                "Overload settings determine the threshold for cleaning entities on huge explosions.\n" +
+                "Startup settings determine the flags specified when cleaning entities when worlds are loaded.\n" +
+                "Chunk recovery causes a force clean on all chunks as they are loaded, to try to fix possible chunk corruption.\n" +
+                "Problem chunks contain entities more than the specified cutoff. These will be warned in the server log and cleaned.\n" +
+                "Performance monitor specifies the sample period in minutes between each tick measure."
+        );
         getConfig().set("debug", debug);
         // cleanup on entity overload
         getConfig().set("overload.clean", clean_on_overload);
@@ -144,9 +206,37 @@ public class Cleaner extends JavaPlugin {
         getConfig().set("startup.chunk_recovery", chunk_recovery_mode);
         // info options
         getConfig().set("info.problem_chunk_entity_cutoff", chunk_entity_cutoff);
+        getConfig().set("info.monitor_performance", monitor_performance);
+        getConfig().set("info.monitor_performance_period", monitor_performance_period);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equals("performance")) {
+            if (!sender.hasPermission("thecleaner.performance")) {
+                sender.sendMessage(ChatColor.RED + "You can't use this command.");
+                return true;
+            }
+            long days = 1;
+            if (args.length >= 1) {
+                try {
+                    days = Long.parseLong(args[0]);
+                } catch (NumberFormatException e) {
+                    if (args[0].equalsIgnoreCase("--reset") || args[0].equalsIgnoreCase("-r")) {
+                        if (new File(getDataFolder(), "performance.txt").delete()) {
+                            sender.sendMessage("Performance data successfully reset.");
+                        }
+                        return true;
+                    }
+                    if (args[0].equalsIgnoreCase("--help") || args[0].equalsIgnoreCase("-h")) {
+                        return false;
+                    }
+                    debug("Expected a number: " + e.getLocalizedMessage());
+                    return false;
+                }
+            }
+            showPerformance(sender, days);
+            return true;
+        }
         if (cmd.getName().equals("sysstat")) {
             if (!sender.hasPermission("thecleaner.system")) {
                 sender.sendMessage(ChatColor.RED + "You can't use this command.");
@@ -596,6 +686,50 @@ public class Cleaner extends JavaPlugin {
         }
     }
 
+    public void showPerformance(CommandSender sender, long days) {
+        if (days < 1) { days = 1; }
+        try {
+            FileInputStream reader = new FileInputStream(new File(getDataFolder(), "performance.txt"));
+            BufferedReader in = new BufferedReader(new InputStreamReader(reader));
+            long period = System.currentTimeMillis() - (1000L * 60L * 60L * 24L * days);
+            String line;
+            int average = 0;
+            int iterations = 0;
+            while ((line = in.readLine()) != null) {
+                try {
+                    long epoch = Long.parseLong(line.substring(0, line.indexOf(',')));
+                    if (epoch >= period) {
+                        int avg = Integer.parseInt(line.substring(line.indexOf(',')+1));
+                        average += avg;
+                        iterations++;
+                    }
+                } catch (NumberFormatException e) {
+                    debug("Something went wrong: " + e.getLocalizedMessage());
+                }
+            }
+            if (average > 0) {
+                int avg = average / iterations;
+                sender.sendMessage("Average tick rate over the last " + ChatColor.AQUA + (days > 1 ? days + " days": "day") + ChatColor.RESET + " was " + ChatColor.GREEN + avg + ChatColor.RESET + ".");
+                sender.sendMessage("Sample period is every " + ChatColor.GREEN + monitor_performance_period + " minute" + (monitor_performance_period > 1 ? "s":"") + ChatColor.RESET + ".");
+                if (avg >= 20) {
+                    sender.sendMessage("Tick rate is excellent.");
+                } else if (average >= 17) {
+                    sender.sendMessage("Tick rate is average.");
+                } else if (average >= 14) {
+                    sender.sendMessage("Tick rate is below average.");
+                } else if (average <= 13) {
+                    sender.sendMessage("Tick rate is low.");
+                }
+            } else {
+                sender.sendMessage("No performance has been measured.");
+            }
+        } catch (FileNotFoundException e) {
+            sender.sendMessage("No performance has been measured yet.");
+        } catch (IOException e) {
+            debug(e.getLocalizedMessage());
+        }
+    }
+
     public void showMemory(CommandSender sender) {
         Runtime runtime = Runtime.getRuntime();
         long maxMemory  = runtime.maxMemory();
@@ -610,6 +744,24 @@ public class Cleaner extends JavaPlugin {
         try {
             Clock clock = new Clock(sender);
             clock.ID = getServer().getScheduler().scheduleSyncRepeatingTask(this, clock, 1L, 1L);
+        } catch (RuntimeException e) {
+            debug(e.getLocalizedMessage());
+        }
+    }
+
+    private void scheduleMonitor() {
+        try {
+            getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Monitor mon = new Monitor();
+                        mon.ID = getServer().getScheduler().scheduleSyncRepeatingTask(Cleaner.this, mon, 1L, 1L);
+                    } catch (RuntimeException e) {
+                        debug(e.getLocalizedMessage());
+                    }
+                }
+            }, 1L, monitor_performance_period * 20L * 60L);
         } catch (RuntimeException e) {
             debug(e.getLocalizedMessage());
         }
