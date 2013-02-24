@@ -27,6 +27,7 @@ import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.WaterMob;
+import org.bukkit.entity.Wither;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.BufferedReader;
@@ -603,6 +604,9 @@ public class Cleaner extends JavaPlugin {
             if (e instanceof Monster) {
                 if ((e instanceof EnderDragon || e instanceof EnderDragonPart)) {
                     return flags.contains(Flag.DRAGON);
+                }
+                if (e instanceof Wither) {
+                    return flags.contains(Flag.WITHER);
                 }
                 // this is a monster, and the monster flag was explicitly added
                 return flags.contains(Flag.MONSTER);
