@@ -100,6 +100,7 @@ public class Cleaner extends JavaPlugin {
         public Clock(CommandSender sender) {
             runner = sender.getName();
             started = System.currentTimeMillis();
+            sender.sendMessage("Calculating tick rate over 5 seconds...");
         }
 
         @Override
@@ -125,11 +126,11 @@ public class Cleaner extends JavaPlugin {
                         sender.sendMessage("Server clock is running a bit slow. Consider optimizing plugin settings.");
                     }
                     String performance;
-                    if (r < 1020) {
+                    if (r < 1049) {
                         performance = ChatColor.GREEN + "Excellent";
-                    } else if (r >= 1020 && r < 1200) {
+                    } else if (r >= 1050 && r < 1249) {
                         performance = ChatColor.GOLD + "Average";
-                    } else if (r >= 1200 && r < 1500) {
+                    } else if (r >= 1250 && r < 1549) {
                         performance = ChatColor.RED + "Poor";
                     } else {
                         performance = ChatColor.GRAY + "Terrible";
@@ -137,6 +138,7 @@ public class Cleaner extends JavaPlugin {
                     sender.sendMessage("Server performance: " + performance);
                     sender.sendMessage("Average ticks: " + t + " (Over an average of " + r + "ms)");
                     sender.sendMessage("Total ticks: " + this.total + " (Over a total of " + this.runtime + "ms)");
+                    sender.sendMessage("Server tick rate: " + (((float) this.runtime / 5f) / 50f));
                     getServer().getScheduler().cancelTask(ID);
                     if (getServer().getScheduler().isCurrentlyRunning(ID)) {
                         throw new RuntimeException("Clock time exceeded.");
