@@ -138,7 +138,7 @@ public class Cleaner extends JavaPlugin {
                     sender.sendMessage("Server performance: " + performance);
                     sender.sendMessage("Average ticks: " + t + " (Over an average of " + r + "ms)");
                     sender.sendMessage("Total ticks: " + this.total + " (Over a total of " + this.runtime + "ms)");
-                    sender.sendMessage("Server tick rate: " + (((float) this.runtime / 5f) / 50f));
+                    sender.sendMessage("Server tick rate: " + (20f - Math.abs(((float) this.runtime - 5000f) / 50f / 5f)));
                     getServer().getScheduler().cancelTask(ID);
                     if (getServer().getScheduler().isCurrentlyRunning(ID)) {
                         throw new RuntimeException("Clock time exceeded.");
