@@ -504,6 +504,11 @@ public class Cleaner extends JavaPlugin {
                 int vehicle = 0, tamed = 0, golem = 0, painting = 0, villager = 0, monster = 0, animal = 0, watermob = 0, item = 0;
                 while (iter.hasNext()) {
                     Entity e = iter.next();
+                    if (flags.contains(Flag.REPORT)) {
+                        if (flags.contains(Flag.VERBOSE)) {
+                            report.add(e);
+                        }
+                    }
                     if (cleanerCheck(e, flags)) {
                         // check if the entity meets the radius requirement
                         if (flags.contains(Flag.RADIUS)) {
@@ -541,7 +546,9 @@ public class Cleaner extends JavaPlugin {
                             item++;
                         }
                         if (flags.contains(Flag.REPORT)) {
-                            report.add(e);
+                            if (!flags.contains(Flag.VERBOSE)) {
+                                report.add(e);
+                            }
                         }
                         e.remove();
                         iter.remove();
